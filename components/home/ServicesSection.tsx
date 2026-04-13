@@ -1,0 +1,49 @@
+export default function ServicesSection() {
+  const services = [
+    {
+      num: '01',
+      title: 'Buy',
+      body: 'Browse our handpicked selection of prestige and performance vehicles. Every car is inspected and prepared to the highest standard before it reaches our showroom.',
+    },
+    {
+      num: '02',
+      title: 'Sell',
+      body: "Looking to sell your vehicle? We offer fair, transparent valuations and a hassle-free process. Reach a qualified buyer without the headaches of private sale.",
+    },
+    {
+      num: '03',
+      title: 'Finance',
+      body: "We work with a network of trusted finance brokers to secure competitive rates tailored to your situation — whether you're buying your first prestige car or your fifth.",
+    },
+  ];
+
+  return (
+    <>
+      <section className="px-[52px] pb-0 pt-24 max-md:px-6 max-md:pt-16">
+        <div className="flex items-end justify-between mb-[52px]">
+          <div>
+            <div className="font-mono-custom text-[9px] tracking-[0.35em] uppercase text-gold mb-[14px]">
+              What We Offer
+            </div>
+            <h2
+              className="font-display font-[300] leading-[1.05]"
+              style={{ fontSize: 'clamp(36px, 4.5vw, 56px)' }}
+            >
+              Our <em className="italic text-gold-hi">Services</em>
+            </h2>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-border">
+        {services.map(({ num, title, body }) => (
+          <div key={num} className="bg-bg-2 px-9 py-11">
+            <div className="font-mono-custom text-[9px] tracking-[0.3em] text-gold-lo mb-5">{num}</div>
+            <div className="font-display text-[28px] font-[400] mb-3">{title}</div>
+            <p className="text-[13px] text-text-2 leading-[1.85]">{body}</p>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
