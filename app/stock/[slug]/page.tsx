@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Badge from '@/components/ui/Badge';
-import CarSVG from '@/components/ui/CarSVG';
+import PhotoGallery from '@/components/stock/PhotoGallery';
+import SimilarVehicles from '@/components/stock/SimilarVehicles';
 import EnquiryForm from '@/components/forms/EnquiryForm';
 import { getVehicleBySlug, getVehicles } from '@/lib/supabase/vehicles';
 import { formatPrice, formatKm } from '@/lib/utils';
@@ -63,9 +63,6 @@ export default async function VehicleDetailPage({ params }: PageProps) {
 
   if (!vehicle) notFound();
 
-  const coverPhoto = vehicle.photos?.[0];
-  const otherPhotos = vehicle.photos?.slice(1) ?? [];
-
   return (
     <>
       <Navbar />
@@ -80,48 +77,23 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           </Link>
         </div>
 
-        {/* Gallery */}
-        <div className="aspect-[16/8] bg-bg-3 relative overflow-hidden">
-          {coverPhoto ? (
-            <Image
-              src={coverPhoto}
-              alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
-              fill
-              className="object-cover"
-              priority
-              sizes="100vw"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <CarSVG width={480} opacity={0.1} />
-            </div>
-          )}
-          <div className="absolute top-5 left-5">
+        {/* Gallery with status badges */}
+        <div className="relative">
+          <PhotoGallery
+            photos={vehicle.photos ?? []}
+            make={vehicle.make}
+            model={vehicle.model}
+            year={vehicle.year}
+          />
+          <div className="absolute top-5 left-5 z-10 pointer-events-none">
             <Badge status={vehicle.status} />
           </div>
           {vehicle.status === 'available' && (
-            <div className="absolute top-5 right-5 font-mono-custom text-[8px] tracking-[0.25em] uppercase px-[14px] py-[6px] border border-gold-lo text-gold bg-[rgba(0,0,0,0.6)]">
+            <div className="absolute top-5 right-5 z-10 font-mono-custom text-[8px] tracking-[0.25em] uppercase px-[14px] py-[6px] border border-gold-lo text-gold bg-[rgba(0,0,0,0.6)] pointer-events-none">
               Available Now
             </div>
           )}
         </div>
-
-        {/* Secondary photos */}
-        {otherPhotos.length > 0 && (
-          <div className="grid grid-cols-4 gap-[2px] bg-border border-b border-border max-md:grid-cols-2">
-            {otherPhotos.slice(0, 4).map((photo, i) => (
-              <div key={i} className="aspect-[4/3] relative overflow-hidden bg-bg-3">
-                <Image
-                  src={photo}
-                  alt={`${vehicle.make} ${vehicle.model} photo ${i + 2}`}
-                  fill
-                  className="object-cover hover:scale-105 transition-transform duration-500"
-                  sizes="25vw"
-                />
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* Main content */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] border-b border-border">
@@ -223,6 +195,12 @@ export default async function VehicleDetailPage({ params }: PageProps) {
             </div>
           </div>
         </div>
+
+        <SimilarVehicles
+          currentSlug={vehicle.slug}
+          bodyType={vehicle.body_type}
+          make={vehicle.make}
+        />
       </main>
       <Footer />
     </>
