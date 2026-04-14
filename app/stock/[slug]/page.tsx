@@ -8,24 +8,14 @@ import Badge from '@/components/ui/Badge';
 import PhotoGallery from '@/components/stock/PhotoGallery';
 import SimilarVehicles from '@/components/stock/SimilarVehicles';
 import EnquiryForm from '@/components/forms/EnquiryForm';
-import { getVehicleBySlug, getVehicles } from '@/lib/supabase/vehicles';
+import { getVehicleBySlug } from '@/lib/supabase/vehicles';
 import { formatPrice, formatKm } from '@/lib/utils';
 import { BUSINESS } from '@/lib/constants';
 
 export const revalidate = 60;
-export const dynamicParams = true;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-}
-
-export async function generateStaticParams() {
-  try {
-    const vehicles = await getVehicles();
-    return vehicles.map((v) => ({ slug: v.slug }));
-  } catch {
-    return [];
-  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -56,13 +46,7 @@ const SPEC_ROWS = [
 export default async function VehicleDetailPage({ params }: PageProps) {
   const { slug } = await params;
 
-  let vehicle;
-  try {
-    vehicle = await getVehicleBySlug(slug);
-  } catch {
-    notFound();
-  }
-
+  const vehicle = await getVehicleBySlug(slug).catch(() => null);
   if (!vehicle) notFound();
 
   const whatsappText = encodeURIComponent(
