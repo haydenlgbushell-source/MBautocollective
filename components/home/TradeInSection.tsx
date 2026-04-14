@@ -105,9 +105,9 @@ export default function TradeInSection() {
 
         <ol className="list-none flex flex-col gap-[16px] mb-10">
           {[
-            'Enter your vehicle's registration and a few quick details',
-            'We assess against live market data and our current demand',
-            'Receive a genuine offer — apply to purchase, or cash out',
+            "Enter your vehicle's registration and a few quick details",
+            "We assess against live market data and our current demand",
+            "Receive a genuine offer — apply to purchase, or cash out",
           ].map((step, i) => (
             <li key={i} className="flex items-start gap-5">
               <span
