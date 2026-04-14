@@ -3,6 +3,7 @@ export const BUSINESS = {
   director: 'Matt',
   phone: '0400 003 994',
   phoneHref: 'tel:+61400003994',
+  whatsappHref: 'https://wa.me/61400003994',
   email: 'matt@mbautocollective.com',
   address: '1/267 Young Street, Waterloo NSW 2017',
   mapsUrl: 'https://maps.app.goo.gl/4UTj9iU3cf6JrDpr5',
