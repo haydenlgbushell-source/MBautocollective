@@ -27,8 +27,8 @@ const config: Config = {
         },
         text: {
           DEFAULT: '#f5f2ed',
-          2: '#8a8478',
-          3: '#6b6b6b',
+          2: '#a09890',
+          3: '#878177',
         },
       },
       fontFamily: {
