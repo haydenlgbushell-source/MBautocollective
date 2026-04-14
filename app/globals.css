@@ -84,6 +84,44 @@ body {
   background-size: 256px;
 }
 
+/* ── Animated grain (hero) ── */
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0) scale(1.05); }
+  20%       { transform: translate(-3%, -3%) scale(1.05); }
+  40%       { transform: translate(-2%,  3%) scale(1.05); }
+  60%       { transform: translate( 3%, -2%) scale(1.05); }
+  80%       { transform: translate( 2%,  2%) scale(1.05); }
+}
+
+.noise-animate {
+  animation: grain 8s steps(1) infinite;
+}
+
+/* ── Hero line animation ── */
+@keyframes slideUp {
+  from { transform: translateY(110%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.hero-line-wrap {
+  overflow: hidden;
+  display: block;
+}
+
+.hero-line {
+  display: block;
+  opacity: 0;
+  animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Custom cursor (pointer devices only) ── */
+@media (pointer: fine) {
+  body { cursor: none; }
+  a, button, [role="button"], label, select, input[type="submit"], input[type="button"] {
+    cursor: none;
+  }
+}
+
 /* ── Typography utilities ── */
 .font-display {
   font-family: var(--fd);

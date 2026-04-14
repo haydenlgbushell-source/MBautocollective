@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, DM_Sans, DM_Mono } from 'next/font/google';
 import './globals.css';
+import CustomCursor from '@/components/ui/CustomCursor';
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -56,7 +57,10 @@ export default function RootLayout({
       lang="en-AU"
       className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}
     >
-      <body className="bg-bg text-text font-body antialiased">{children}</body>
+      <body className="bg-bg text-text font-body antialiased">
+        <CustomCursor />
+        {children}
+      </body>
     </html>
   );
 }
