@@ -14,8 +14,8 @@
   --gold-lo: #7a6428;
   --gold-dim: rgba(184, 150, 62, 0.08);
   --text:  #f5f2ed;
-  --text2: #8a8478;
-  --text3: #6b6b6b;
+  --text2: #a09890;
+  --text3: #878177;
   --fd: 'Cormorant Garamond', serif;
   --fb: 'Montserrat', sans-serif;
   --fm: 'DM Mono', monospace;
@@ -35,7 +35,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--fb);
-  font-weight: 300;
+  font-weight: 400;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
