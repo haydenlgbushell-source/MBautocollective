@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
@@ -244,11 +245,13 @@ export default async function VehicleDetailPage({ params }: PageProps) {
         </div>
 
         {/* Similar vehicles */}
-        <SimilarVehicles
-          currentSlug={vehicle.slug}
-          bodyType={vehicle.body_type}
-          make={vehicle.make}
-        />
+        <Suspense fallback={null}>
+          <SimilarVehicles
+            currentSlug={vehicle.slug}
+            bodyType={vehicle.body_type}
+            make={vehicle.make}
+          />
+        </Suspense>
       </main>
       <Footer />
     </>
