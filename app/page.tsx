@@ -1,12 +1,13 @@
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/home/Hero';
-import StockTicker from '@/components/home/StockTicker';
+import SearchSection from '@/components/home/SearchSection';
 import FeaturedStock from '@/components/home/FeaturedStock';
-import AboutStrip from '@/components/home/AboutStrip';
+import FinanceBanner from '@/components/home/FinanceBanner';
+import TradeInSection from '@/components/home/TradeInSection';
 import ServicesSection from '@/components/home/ServicesSection';
 import ReviewsSection from '@/components/home/ReviewsSection';
-import CTABand from '@/components/home/CTABand';
+import ChatBubble from '@/components/ui/ChatBubble';
 import { getVehicles } from '@/lib/supabase/vehicles';
 
 export const revalidate = 60;
@@ -18,7 +19,10 @@ export default async function HomePage() {
 
   try {
     vehicles = await getVehicles({ status: 'available' });
-    featuredVehicles = await getVehicles({ featured: true, status: 'available', limit: 3 });
+    featuredVehicles = await getVehicles({ featured: true, status: 'available', limit: 4 });
+    if (featuredVehicles.length === 0) {
+      featuredVehicles = await getVehicles({ status: 'available', limit: 4 });
+    }
     availableCount = vehicles.length;
   } catch {
     // Supabase not yet configured — show empty state
@@ -28,15 +32,29 @@ export default async function HomePage() {
     <>
       <Navbar />
       <main>
+        {/* 1. Full-screen hero */}
         <Hero availableCount={availableCount} />
-        <StockTicker vehicles={vehicles} />
+
+        {/* 2. Search / filter bar */}
+        <SearchSection />
+
+        {/* 3. Featured inventory (bento grid) */}
         <FeaturedStock vehicles={featuredVehicles} />
-        <AboutStrip />
+
+        {/* 4. Finance banner */}
+        <FinanceBanner />
+
+        {/* 5. Trade-in / valuation section */}
+        <TradeInSection />
+
+        {/* 6. Why Us — 6-panel grid */}
         <ServicesSection />
+
+        {/* 7. Reviews / testimonials */}
         <ReviewsSection />
-        <CTABand />
       </main>
       <Footer />
+      <ChatBubble />
     </>
   );
 }

@@ -3,21 +3,21 @@
 @tailwind utilities;
 
 :root {
-  --bg: #080807;
-  --bg2: #0e0e0c;
-  --bg3: #161614;
-  --bg4: #1c1c19;
-  --border: #252520;
-  --border2: #2e2e28;
-  --gold: #c9a84c;
-  --gold-hi: #e2c76a;
-  --gold-lo: #7a641e;
-  --gold-dim: rgba(201, 168, 76, 0.08);
-  --text: #f0ebe0;
+  --bg:      #0a0a0a;
+  --bg2:     #111111;
+  --bg3:     #1c1c1e;
+  --bg4:     #2e2e30;
+  --border:  rgba(184, 150, 62, 0.25);
+  --border2: rgba(184, 150, 62, 0.4);
+  --gold:    #b8963e;
+  --gold-hi: #d4af6a;
+  --gold-lo: #7a6428;
+  --gold-dim: rgba(184, 150, 62, 0.08);
+  --text:  #f5f2ed;
   --text2: #8a8478;
-  --text3: #4a4840;
+  --text3: #6b6b6b;
   --fd: 'Cormorant Garamond', serif;
-  --fb: 'DM Sans', sans-serif;
+  --fb: 'Montserrat', sans-serif;
   --fm: 'DM Mono', monospace;
 }
 
@@ -46,21 +46,52 @@ body {
   color: var(--gold-hi);
 }
 
-::-webkit-scrollbar {
-  width: 3px;
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track  { background: var(--bg); }
+::-webkit-scrollbar-thumb  { background: var(--gold-lo); }
+
+/* ── Custom cursor (pointer devices only) ── */
+@media (pointer: fine) {
+  body { cursor: none; }
+  a, button, [role="button"], label, select,
+  input[type="submit"], input[type="button"] { cursor: none; }
 }
 
-::-webkit-scrollbar-track {
-  background: var(--bg);
+/* ── Hero: fade-up entry ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--gold-lo);
+.animate-fadeup {
+  animation: fadeUp 1.2s ease 0.3s forwards;
+  opacity: 0;
 }
 
-/* ── Marquee Animation ── */
+.animate-fadeup-delayed {
+  animation: fadeUp 1.2s ease 0.7s forwards;
+  opacity: 0;
+}
+
+/* ── Hero: animated vertical gold lines ── */
+@keyframes lineFloat {
+  0%, 100% { transform: translateY(-5%) rotate(0.5deg); opacity: 0.3; }
+  50%       { transform: translateY(5%) rotate(-0.5deg); opacity: 0.8; }
+}
+
+.hero-line-v {
+  position: absolute;
+  top: -50%;
+  width: 1px;
+  height: 200%;
+  background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+  animation: lineFloat 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Marquee (stock ticker) ── */
 @keyframes marquee {
-  0% { transform: translateX(0); }
+  0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
 
@@ -68,10 +99,10 @@ body {
   animation: marquee 35s linear infinite;
 }
 
-/* ── Scroll pulse animation ── */
+/* ── Scroll pulse ── */
 @keyframes scrollpulse {
   0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
+  50%       { opacity: 1; }
 }
 
 .animate-scrollpulse {
@@ -84,30 +115,49 @@ body {
   background-size: 256px;
 }
 
+/* ── Animated grain ── */
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0) scale(1.05); }
+  20%       { transform: translate(-3%, -3%) scale(1.05); }
+  40%       { transform: translate(-2%,  3%) scale(1.05); }
+  60%       { transform: translate( 3%, -2%) scale(1.05); }
+  80%       { transform: translate( 2%,  2%) scale(1.05); }
+}
+
+.noise-animate {
+  animation: grain 8s steps(1) infinite;
+}
+
+/* ── Hero per-line slide-up (kept for other pages) ── */
+@keyframes slideUp {
+  from { transform: translateY(110%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.hero-line-wrap { overflow: hidden; display: block; }
+
+.hero-line {
+  display: block;
+  opacity: 0;
+  animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* ── Typography utilities ── */
-.font-display {
-  font-family: var(--fd);
-}
+.font-display     { font-family: var(--fd); }
+.font-body        { font-family: var(--fb); }
+.font-mono-custom { font-family: var(--fm); }
 
-.font-body {
-  font-family: var(--fb);
-}
-
-.font-mono-custom {
-  font-family: var(--fm);
-}
-
-/* ── Input/Select reset for dark theme ── */
+/* ── Input autofill dark theme ── */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px var(--bg2) inset !important;
+  -webkit-box-shadow: 0 0 0 30px var(--bg3) inset !important;
   -webkit-text-fill-color: var(--text) !important;
   caret-color: var(--text);
 }
 
 select option {
-  background: var(--bg2);
+  background: var(--bg3);
   color: var(--text);
 }

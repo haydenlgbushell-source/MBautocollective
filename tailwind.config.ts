@@ -10,30 +10,30 @@ const config: Config = {
     extend: {
       colors: {
         bg: {
-          DEFAULT: '#080807',
-          2: '#0e0e0c',
-          3: '#161614',
-          4: '#1c1c19',
+          DEFAULT: '#0a0a0a',
+          2: '#111111',
+          3: '#1c1c1e',
+          4: '#2e2e30',
         },
         border: {
-          DEFAULT: '#252520',
-          2: '#2e2e28',
+          DEFAULT: 'rgba(184,150,62,0.25)',
+          2: 'rgba(184,150,62,0.4)',
         },
         gold: {
-          DEFAULT: '#c9a84c',
-          hi: '#e2c76a',
-          lo: '#7a641e',
-          dim: 'rgba(201,168,76,0.08)',
+          DEFAULT: '#b8963e',
+          hi: '#d4af6a',
+          lo: '#7a6428',
+          dim: 'rgba(184,150,62,0.08)',
         },
         text: {
-          DEFAULT: '#f0ebe0',
+          DEFAULT: '#f5f2ed',
           2: '#8a8478',
-          3: '#4a4840',
+          3: '#6b6b6b',
         },
       },
       fontFamily: {
         display: ['var(--font-cormorant)', 'Cormorant Garamond', 'serif'],
-        body: ['var(--font-dm-sans)', 'DM Sans', 'sans-serif'],
+        body: ['var(--font-montserrat)', 'Montserrat', 'sans-serif'],
         mono: ['var(--font-dm-mono)', 'DM Mono', 'monospace'],
       },
       borderRadius: {
