@@ -5,7 +5,6 @@ import SearchSection from '@/components/home/SearchSection';
 import FeaturedStock from '@/components/home/FeaturedStock';
 import FinanceBanner from '@/components/home/FinanceBanner';
 import TradeInSection from '@/components/home/TradeInSection';
-import ServicesSection from '@/components/home/ServicesSection';
 import ReviewsSection from '@/components/home/ReviewsSection';
 import ChatBubble from '@/components/ui/ChatBubble';
 import { getVehicles } from '@/lib/supabase/vehicles';
@@ -47,10 +46,7 @@ export default async function HomePage() {
         {/* 5. Trade-in / valuation section */}
         <TradeInSection />
 
-        {/* 6. Why Us — 6-panel grid */}
-        <ServicesSection />
-
-        {/* 7. Reviews / testimonials */}
+        {/* 6. Reviews / testimonials */}
         <ReviewsSection />
       </main>
       <Footer />

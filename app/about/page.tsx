@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CTABand from '@/components/home/CTABand';
+import ServicesSection from '@/components/home/ServicesSection';
 import { BUSINESS } from '@/lib/constants';
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default function AboutPage() {
             className="font-display font-[300] leading-[1.0]"
             style={{ fontSize: 'clamp(44px, 6vw, 72px)' }}
           >
-            About <em className="italic text-gold-hi">MB Auto Collective</em>
+            Why <em className="italic text-gold-hi">Us</em>
           </h1>
         </div>
 
@@ -96,6 +97,9 @@ export default function AboutPage() {
             </div>
           ))}
         </div>
+
+        {/* Why Buyers Choose Us — 6-panel grid */}
+        <ServicesSection />
 
         <CTABand />
       </main>
