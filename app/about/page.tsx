@@ -83,21 +83,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Services strip */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-border border-t border-border">
-          {[
-            ['01', 'Buy', 'Browse our handpicked selection of prestige and performance vehicles. Every car is inspected and prepared to the highest standard.'],
-            ['02', 'Sell', 'We offer fair, transparent valuations and a hassle-free process. Reach a qualified buyer without the headaches of private sale.'],
-            ['03', 'Finance', 'We work with trusted finance brokers to secure competitive rates tailored to your situation.'],
-          ].map(([n, t, b]) => (
-            <div key={n} className="bg-bg-2 px-9 py-11">
-              <div className="font-mono-custom text-[9px] tracking-[0.3em] text-gold-lo mb-5">{n}</div>
-              <div className="font-display text-[28px] font-[400] mb-3">{t}</div>
-              <p className="text-[13px] text-text-2 leading-[1.85]">{b}</p>
-            </div>
-          ))}
-        </div>
-
         {/* Why Buyers Choose Us — 6-panel grid */}
         <ServicesSection />
 
