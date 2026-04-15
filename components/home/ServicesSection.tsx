@@ -1,71 +1,87 @@
-const WHY_US = [
+const WHAT_WE_OFFER = [
   {
     num: '01',
-    title: 'Hand-Selected Inventory',
-    body: 'Every vehicle passes a rigorous inspection before it reaches our showroom. We buy right so you can buy with confidence.',
+    title: 'Experience',
+    body: 'We have over 15 years in the automotive industry, with extensive knowledge of all brands & models.',
     icon: (
       <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
-        <circle cx="24" cy="24" r="20" stroke="#c9a84c" strokeWidth="1.5" />
-        <path d="M16 24 L21 29 L32 18" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Steering wheel */}
+        <circle cx="24" cy="24" r="16" stroke="#c9a84c" strokeWidth="1.5" />
+        <circle cx="24" cy="24" r="4" stroke="#c9a84c" strokeWidth="1.5" />
+        <line x1="24" y1="8" x2="24" y2="20" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="11.5" y1="31" x2="20.5" y2="26" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="36.5" y1="31" x2="27.5" y2="26" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
   },
   {
     num: '02',
-    title: 'Transparent Pricing',
-    body: "No hidden fees, no dealer delivery charges on top. The price you see includes everything — we don't play games.",
+    title: 'Relationships',
+    body: 'We have built strong relationships in dealer land which allows us to source any new & used car you are looking for.',
     icon: (
       <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
-        <rect x="8" y="14" width="32" height="22" rx="2" stroke="#c9a84c" strokeWidth="1.5" />
-        <path d="M16 14 L16 10 C16 9 17 8 18 8 L30 8 C31 8 32 9 32 10 L32 14" stroke="#c9a84c" strokeWidth="1.5" />
-        <line x1="24" y1="20" x2="24" y2="30" stroke="#c9a84c" strokeWidth="1.5" />
-        <line x1="19" y1="25" x2="29" y2="25" stroke="#c9a84c" strokeWidth="1.5" />
+        {/* Handshake */}
+        <path d="M6 28 L14 20 L20 22 L26 18 L34 22" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M34 22 L42 28 L34 36 L26 32 L20 34 L14 30 L6 28" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M20 22 L20 34" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M26 18 L26 32" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
   },
   {
     num: '03',
-    title: 'Finance In-House',
-    body: 'Access to 15+ lenders with competitive rates from 2.99% p.a. Get pre-approved before you set foot in the showroom.',
+    title: 'Competitive Pricing',
+    body: 'We can purchase current vehicles at competitive prices by eliminating the Car Sales process. We also offer same day payment.',
     icon: (
       <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
-        <path d="M24 8 C24 8 12 14 12 24 C12 32 18 38 24 40 C30 38 36 32 36 24 C36 14 24 8 24 8Z" stroke="#c9a84c" strokeWidth="1.5" />
-        <path d="M19 24 L22 27 L29 20" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Car with price tag */}
+        <path d="M8 28 L12 20 L20 18 L36 18 L42 24 L42 32 L8 32 Z" stroke="#c9a84c" strokeWidth="1.5" strokeLinejoin="round" />
+        <circle cx="15" cy="33" r="4" stroke="#c9a84c" strokeWidth="1.5" />
+        <circle cx="35" cy="33" r="4" stroke="#c9a84c" strokeWidth="1.5" />
+        <line x1="24" y1="14" x2="24" y2="10" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="21" y1="12" x2="27" y2="12" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
   },
   {
     num: '04',
-    title: 'Personal Service',
-    body: "You'll deal with the same person from first enquiry to handover. No call centres, no runaround — ever.",
+    title: 'Finance',
+    body: 'We have access to a variety of Finance brokers who can secure you market leading finance on new & used vehicles.',
     icon: (
       <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
-        <circle cx="24" cy="20" r="8" stroke="#c9a84c" strokeWidth="1.5" />
-        <path d="M12 40 C12 33 17 28 24 28 C31 28 36 33 36 40" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
+        {/* Document with dollar sign */}
+        <rect x="10" y="6" width="28" height="36" rx="2" stroke="#c9a84c" strokeWidth="1.5" />
+        <line x1="16" y1="16" x2="32" y2="16" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="16" y1="22" x2="32" y2="22" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M24 28 C21 28 19 29.5 19 31.5 C19 33.5 21 34.5 24 35 C27 35.5 29 36.5 29 38.5" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="24" y1="26" x2="24" y2="40" stroke="#c9a84c" strokeWidth="1.2" strokeLinecap="round" />
       </svg>
     ),
   },
   {
     num: '05',
-    title: 'Nationwide Delivery',
-    body: 'Based in Sydney, delivering everywhere. Door-to-door transport arranged, fully insured, at a flat rate.',
+    title: 'Car Valuation',
+    body: 'Want to know the market rate for a particular vehicle? We are currently offering free valuations.',
     icon: (
       <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
-        <rect x="6" y="18" width="26" height="16" rx="2" stroke="#c9a84c" strokeWidth="1.5" />
-        <path d="M32 22 L40 22 L44 30 L44 34 L32 34 Z" stroke="#c9a84c" strokeWidth="1.5" strokeLinejoin="round" />
-        <circle cx="14" cy="36" r="4" stroke="#c9a84c" strokeWidth="1.5" />
-        <circle cx="37" cy="36" r="4" stroke="#c9a84c" strokeWidth="1.5" />
+        {/* Magnifying glass over car */}
+        <circle cx="20" cy="20" r="12" stroke="#c9a84c" strokeWidth="1.5" />
+        <line x1="29" y1="29" x2="40" y2="40" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M13 22 L15 17 L20 16 L27 16 L29 20 L29 24 L13 24 Z" stroke="#c9a84c" strokeWidth="1.2" strokeLinejoin="round" />
+        <circle cx="16" cy="25" r="2.5" stroke="#c9a84c" strokeWidth="1.2" />
+        <circle cx="26" cy="25" r="2.5" stroke="#c9a84c" strokeWidth="1.2" />
       </svg>
     ),
   },
   {
     num: '06',
-    title: '5.0★ on Google',
-    body: 'Over 126 verified reviews from real buyers across Sydney and beyond. Our reputation is everything to us.',
+    title: '24 Hour Contact',
+    body: 'At MB Auto Collective we never stop and are always available for our clients. We are contactable 24/7.',
     icon: (
       <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
+        {/* Clock */}
         <circle cx="24" cy="24" r="16" stroke="#c9a84c" strokeWidth="1.5" />
-        <path d="M24 16 L26.5 21 L32 21.5 L28 25.5 L29 31 L24 28 L19 31 L20 25.5 L16 21.5 L21.5 21 Z" stroke="#c9a84c" strokeWidth="1.2" fill="none" />
+        <path d="M24 14 L24 24 L31 28" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -86,14 +102,14 @@ export default function ServicesSection() {
             className="font-display font-[300] leading-[1.05] max-w-[440px]"
             style={{ fontSize: 'clamp(36px, 4.5vw, 58px)' }}
           >
-            Why Buyers Choose{' '}
-            <em className="italic text-gold-hi">Us</em>
+            What We{' '}
+            <em className="italic text-gold-hi">Offer</em>
           </h2>
         </div>
       </section>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-border">
-        {WHY_US.map(({ num, icon, title, body }) => (
+        {WHAT_WE_OFFER.map(({ num, icon, title, body }) => (
           <div
             key={num}
             className="group bg-bg-2 px-10 py-12 relative overflow-hidden transition-colors duration-300 hover:bg-bg-3"
