@@ -23,6 +23,10 @@ export interface Vehicle {
   photos?: string[] | null;
   status: VehicleStatus;
   featured: boolean;
+  stock_number?: string | null;
+  vin?: string | null;
+  reg_plate?: string | null;
+  reg_expiry?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -46,6 +50,10 @@ export interface VehicleInsert {
   photos?: string[];
   status?: VehicleStatus;
   featured?: boolean;
+  stock_number?: string;
+  vin?: string;
+  reg_plate?: string;
+  reg_expiry?: string;
 }
 
 export interface VehicleUpdate extends Partial<VehicleInsert> {
