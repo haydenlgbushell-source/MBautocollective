@@ -181,7 +181,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-[10px] w-full bg-[#25D366] text-white font-body text-[11px] tracking-[0.2em] uppercase px-6 py-[14px] font-[500] hover:bg-[#20b858] transition-colors no-underline"
+                className="flex items-center justify-center gap-[10px] w-full bg-gold text-white font-body text-[11px] tracking-[0.2em] uppercase px-6 py-[14px] font-[500] hover:bg-gold-hi transition-colors no-underline"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
