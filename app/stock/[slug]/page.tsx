@@ -9,6 +9,7 @@ import PhotoGallery from '@/components/stock/PhotoGallery';
 import SimilarVehicles from '@/components/stock/SimilarVehicles';
 import VehicleDetailPanel from '@/components/stock/VehicleDetailPanel';
 import EnquiryForm from '@/components/forms/EnquiryForm';
+import ShareButton from '@/components/ui/ShareButton';
 import { getVehicleBySlug } from '@/lib/supabase/vehicles';
 import { formatPrice, formatKm } from '@/lib/utils';
 import { BUSINESS } from '@/lib/constants';
@@ -67,13 +68,18 @@ export default async function VehicleDetailPage({ params }: PageProps) {
       <main className="pt-[76px]">
 
         {/* Breadcrumb */}
-        <div className="px-[52px] py-4 border-b border-border flex items-center gap-3 max-md:px-6">
+        <div className="px-[52px] py-4 border-b border-border flex items-center justify-between gap-3 max-md:px-6">
           <Link
             href="/stock"
             className="font-mono-custom text-[9px] tracking-[0.2em] uppercase text-text-3 hover:text-gold transition-colors no-underline"
           >
             ← Back to Stock
           </Link>
+          <ShareButton
+            url={`${BUSINESS.siteUrl}/stock/${vehicle.slug}`}
+            title={`${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.variant ? ` ${vehicle.variant}` : ''}`}
+            variant="text"
+          />
         </div>
 
         {/* Photo gallery */}

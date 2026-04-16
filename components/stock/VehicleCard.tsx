@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { formatPrice, formatKm } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
 import CarSVG from '@/components/ui/CarSVG';
+import ShareButton from '@/components/ui/ShareButton';
+import { BUSINESS } from '@/lib/constants';
 import type { Vehicle } from '@/types/vehicle';
 
 interface VehicleCardProps {
@@ -14,6 +16,8 @@ interface VehicleCardProps {
 
 export default function VehicleCard({ vehicle, featured = false }: VehicleCardProps) {
   const coverPhoto = vehicle.photos?.[0];
+  const shareUrl = `${BUSINESS.siteUrl}/stock/${vehicle.slug}`;
+  const shareTitle = `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.variant ? ` ${vehicle.variant}` : ''}`;
 
   return (
     <Link
@@ -56,6 +60,10 @@ export default function VehicleCard({ vehicle, featured = false }: VehicleCardPr
             {vehicle.photos.length} photos
           </div>
         )}
+
+        <div className="absolute bottom-[12px] left-[12px] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <ShareButton url={shareUrl} title={shareTitle} />
+        </div>
       </div>
 
       {/* Body */}
