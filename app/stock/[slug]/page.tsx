@@ -9,6 +9,7 @@ import PhotoGallery from '@/components/stock/PhotoGallery';
 import SimilarVehicles from '@/components/stock/SimilarVehicles';
 import VehicleDetailPanel from '@/components/stock/VehicleDetailPanel';
 import EnquiryForm from '@/components/forms/EnquiryForm';
+import BookViewingButton from '@/components/stock/BookViewingButton';
 import { getVehicleBySlug } from '@/lib/supabase/vehicles';
 import { formatPrice, formatKm } from '@/lib/utils';
 import { BUSINESS } from '@/lib/constants';
@@ -152,8 +153,13 @@ export default async function VehicleDetailPage({ params }: PageProps) {
               {formatPrice(vehicle.price)}
             </div>
 
-            {/* Three CTA buttons */}
+            {/* CTA buttons */}
             <div className="flex flex-col gap-3 mb-7">
+
+              {/* Book a Viewing — primary CTA for available vehicles */}
+              {vehicle.status === 'available' && (
+                <BookViewingButton vehicle={vehicle} />
+              )}
 
               {/* Call */}
               <a
