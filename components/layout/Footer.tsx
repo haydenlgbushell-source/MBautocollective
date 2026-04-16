@@ -11,6 +11,7 @@ const STOCK_LINKS = [
 
 const SERVICE_LINKS = [
   { href: '/finance', label: 'Finance' },
+  { href: '/car-sourcing', label: 'Source a Car' },
   { href: '/car-valuation', label: 'Free Car Valuation' },
   { href: '/contact', label: 'Nationwide Delivery' },
   { href: '/contact', label: 'Consignment' },

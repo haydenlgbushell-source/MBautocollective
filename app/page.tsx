@@ -3,6 +3,7 @@ import Footer from '@/components/layout/Footer';
 import Hero from '@/components/home/Hero';
 import SearchSection from '@/components/home/SearchSection';
 import FeaturedStock from '@/components/home/FeaturedStock';
+import CarSourcingSection from '@/components/home/CarSourcingSection';
 import FinanceBanner from '@/components/home/FinanceBanner';
 import TradeInSection from '@/components/home/TradeInSection';
 import ServicesSection from '@/components/home/ServicesSection';
@@ -41,16 +42,19 @@ export default async function HomePage() {
         {/* 3. Featured inventory (bento grid) */}
         <FeaturedStock vehicles={featuredVehicles} />
 
-        {/* 4. Finance banner */}
+        {/* 4. Car sourcing — can't find it, we'll source it */}
+        <CarSourcingSection />
+
+        {/* 5. Finance banner */}
         <FinanceBanner />
 
-        {/* 5. Trade-in / valuation section */}
+        {/* 6. Trade-in / valuation section */}
         <TradeInSection />
 
-        {/* 6. Why Us — 6-panel grid */}
+        {/* 7. Why Us — 6-panel grid */}
         <ServicesSection />
 
-        {/* 7. Reviews / testimonials */}
+        {/* 8. Reviews / testimonials */}
         <ReviewsSection />
       </main>
       <Footer />
