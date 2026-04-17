@@ -31,6 +31,7 @@ export default async function StockPage({ searchParams }: StockPageProps) {
 
   // Filter client-side from the full list (fast for small inventories)
   const filtered = vehicles.filter((v) => {
+    if (v.status === 'sold') return false;
     if (params.body && params.body !== 'ALL' && v.body_type !== params.body) return false;
     if (params.q) {
       const q = params.q.toLowerCase();
@@ -41,6 +42,7 @@ export default async function StockPage({ searchParams }: StockPageProps) {
     return true;
   });
 
+  const soldVehicles = vehicles.filter((v) => v.status === 'sold');
   const availableCount = filtered.filter((v) => v.status === 'available').length;
 
   return (
@@ -59,7 +61,7 @@ export default async function StockPage({ searchParams }: StockPageProps) {
             Current <em className="italic text-gold-hi">Stock</em>
           </h1>
           <div className="font-mono-custom text-[10px] tracking-[0.22em] uppercase text-text-3 mt-[14px]">
-            {filtered.length} vehicle{filtered.length !== 1 ? 's' : ''} available
+            {availableCount} vehicle{availableCount !== 1 ? 's' : ''} available
             {params.body && params.body !== 'ALL' ? ` · ${params.body}` : ''}
           </div>
         </div>
@@ -70,6 +72,30 @@ export default async function StockPage({ searchParams }: StockPageProps) {
           </Suspense>
           <VehicleGrid vehicles={filtered} />
         </section>
+
+        {/* Recently Sold */}
+        {soldVehicles.length > 0 && (
+          <>
+            <div className="border-t border-border mx-[52px] max-md:mx-6" />
+            <div className="px-[52px] pt-[52px] pb-[28px] max-md:px-6">
+              <div className="font-mono-custom text-[9px] tracking-[0.35em] uppercase text-text-3 mb-[14px]">
+                Previously Offered
+              </div>
+              <h2
+                className="font-display font-[300] leading-[1.0]"
+                style={{ fontSize: 'clamp(32px, 4.5vw, 56px)' }}
+              >
+                Recently <em className="italic text-text-2">Sold</em>
+              </h2>
+              <div className="font-mono-custom text-[10px] tracking-[0.22em] uppercase text-text-3 mt-[14px]">
+                {soldVehicles.length} vehicle{soldVehicles.length !== 1 ? 's' : ''} sold
+              </div>
+            </div>
+            <section className="px-[52px] pb-24 max-md:px-6">
+              <VehicleGrid vehicles={soldVehicles} />
+            </section>
+          </>
+        )}
       </main>
       <Footer />
     </>
