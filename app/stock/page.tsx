@@ -4,6 +4,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import FilterBar from '@/components/stock/FilterBar';
 import VehicleGrid from '@/components/stock/VehicleGrid';
+import SoldCarousel from '@/components/stock/SoldCarousel';
 import { getVehicles } from '@/lib/supabase/vehicles';
 import type { Vehicle } from '@/types/vehicle';
 
@@ -42,7 +43,10 @@ export default async function StockPage({ searchParams }: StockPageProps) {
     return true;
   });
 
-  const soldVehicles = vehicles.filter((v) => v.status === 'sold');
+  const soldVehicles = vehicles
+    .filter((v) => v.status === 'sold')
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+    .slice(0, 10);
   const availableCount = filtered.filter((v) => v.status === 'available').length;
 
   return (
@@ -87,12 +91,9 @@ export default async function StockPage({ searchParams }: StockPageProps) {
               >
                 Recently <em className="italic text-text-2">Sold</em>
               </h2>
-              <div className="font-mono-custom text-[10px] tracking-[0.22em] uppercase text-text-3 mt-[14px]">
-                {soldVehicles.length} vehicle{soldVehicles.length !== 1 ? 's' : ''} sold
-              </div>
             </div>
             <section className="px-[52px] pb-24 max-md:px-6">
-              <VehicleGrid vehicles={soldVehicles} />
+              <SoldCarousel vehicles={soldVehicles} />
             </section>
           </>
         )}
