@@ -110,23 +110,36 @@ export default function Hero({ availableCount }: HeroProps) {
         className="relative z-10 grid grid-cols-2 md:grid-cols-4 animate-fadeup-delayed"
         style={{ borderTop: '1px solid rgba(184,150,62,0.25)', background: 'rgba(10,10,10,0.8)', backdropFilter: 'blur(20px)' }}
       >
-        {[
-          [availableCount > 0 ? availableCount.toString() : '47', 'Vehicles In Stock'],
-          ['11+', 'Years Experience'],
-          [BUSINESS.reviewScore + '★', 'Google Rating'],
-          ['100%', 'Finance Available'],
-        ].map(([num, label]) => (
+        {(
+          [
+            [availableCount > 0 ? availableCount.toString() : '47', 'Vehicles In Stock', undefined],
+            ['11+', 'Years Experience', undefined],
+            [BUSINESS.reviewScore + '★', 'Google Rating', `${BUSINESS.reviewCount} reviews`],
+            ['100%', 'Finance Available', undefined],
+          ] as [string, string, string | undefined][]
+        ).map(([num, label, sub], i) => (
           <div
             key={label}
-            className="group px-0 py-7 border-r last:border-r-0 text-center transition-colors duration-300"
+            className={[
+              'group px-0 py-6 md:py-7 text-center transition-colors duration-300',
+              'border-r even:border-r-0 md:even:border-r md:last:border-r-0',
+              i < 2 ? 'max-md:border-b' : '',
+              // right-column cells: shrink content area to avoid fixed chat buttons
+              i % 2 === 1 ? 'max-md:pr-[88px]' : '',
+            ].join(' ')}
             style={{ borderColor: 'rgba(184,150,62,0.25)' }}
           >
-            <div className="font-display text-[36px] font-[300] text-gold leading-none mb-[6px]">
+            <div className="font-display text-[28px] md:text-[36px] font-[300] text-gold leading-none mb-[4px] md:mb-[6px]">
               {num}
             </div>
-            <div className="font-mono-custom text-[9px] tracking-[0.2em] uppercase text-text-3">
+            <div className="font-mono-custom text-[8px] md:text-[9px] tracking-[0.2em] uppercase text-text-3">
               {label}
             </div>
+            {sub && (
+              <div className="font-mono-custom text-[7px] md:text-[8px] tracking-[0.15em] uppercase text-text-3 opacity-70 mt-[2px]">
+                {sub}
+              </div>
+            )}
           </div>
         ))}
       </div>
