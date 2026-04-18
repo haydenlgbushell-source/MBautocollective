@@ -1,8 +1,11 @@
+import { submitHubSpotForm } from './forms';
+
 interface HubSpotEnquiry {
   name: string;
   email: string;
   phone?: string;
   message?: string;
+  source?: string;
   vehicle?: {
     id?: string;
     make: string;
@@ -11,6 +14,8 @@ interface HubSpotEnquiry {
     price: number;
     slug?: string;
   };
+  formId?: string;
+  pageUri?: string;
 }
 
 export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
@@ -22,14 +27,40 @@ export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
     'Content-Type': 'application/json',
   };
 
-  // 1. Create or find contact
+  const [firstName, ...lastParts] = data.name.trim().split(' ');
+  const lastName = lastParts.join(' ');
+
+  const vehicleNote = data.vehicle
+    ? `Vehicle interest: ${data.vehicle.year} ${data.vehicle.make} ${data.vehicle.model} ($${data.vehicle.price.toLocaleString()})`
+    : '';
+
+  // 1. Submit via HubSpot Forms API (creates contact + shows in Forms analytics)
+  if (data.formId) {
+    try {
+      await submitHubSpotForm(
+        data.formId,
+        [
+          { name: 'firstname', value: firstName },
+          { name: 'lastname', value: lastName },
+          { name: 'email', value: data.email },
+          { name: 'phone', value: data.phone ?? '' },
+          { name: 'message', value: [data.message, vehicleNote].filter(Boolean).join('\n\n') },
+        ],
+        { pageUri: data.pageUri, pageName: data.source }
+      );
+    } catch (err) {
+      console.error('HubSpot Forms API error (non-fatal):', err);
+    }
+  }
+
+  // 2. Create or find contact via CRM API (required for deal association)
   const contactRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
     method: 'POST',
     headers,
     body: JSON.stringify({
       properties: {
-        firstname: data.name.split(' ')[0] ?? data.name,
-        lastname: data.name.split(' ').slice(1).join(' ') || undefined,
+        firstname: firstName,
+        lastname: lastName || undefined,
         email: data.email,
         phone: data.phone,
       },
@@ -42,24 +73,23 @@ export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
     const contactData = await contactRes.json();
     contactId = contactData.id;
   } else if (contactRes.status === 409) {
-    // Contact already exists — extract ID from error
     const err = await contactRes.json();
     contactId = err?.message?.match(/existing ID: (\d+)/)?.[1];
   }
 
   if (!contactId) return { success: false, error: 'Failed to create HubSpot contact' };
 
-  // 2. Create deal
+  // 3. Create deal
   const vehicleLabel = data.vehicle
     ? `${data.vehicle.year} ${data.vehicle.make} ${data.vehicle.model}`
-    : 'Vehicle Enquiry';
+    : 'Enquiry';
 
   const dealRes = await fetch('https://api.hubapi.com/crm/v3/objects/deals', {
     method: 'POST',
     headers,
     body: JSON.stringify({
       properties: {
-        dealname: `${vehicleLabel} — Enquiry from ${data.name}`,
+        dealname: `${vehicleLabel} — ${data.name}`,
         dealstage: 'appointmentscheduled',
         amount: data.vehicle?.price?.toString(),
         description: data.message,
@@ -72,7 +102,7 @@ export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
   const dealData = await dealRes.json();
   const dealId = dealData.id;
 
-  // 3. Associate deal with contact
+  // 4. Associate deal with contact
   await fetch(
     `https://api.hubapi.com/crm/v3/objects/deals/${dealId}/associations/contacts/${contactId}/deal_to_contact`,
     { method: 'PUT', headers }
