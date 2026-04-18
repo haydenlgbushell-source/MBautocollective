@@ -35,6 +35,7 @@ export default function EnquiryForm({ vehicle, compact = false }: EnquiryFormPro
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          source: 'enquiry',
           vehicle: {
             id: vehicle.id,
             make: vehicle.make,
