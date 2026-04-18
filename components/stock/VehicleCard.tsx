@@ -107,14 +107,22 @@ export default function VehicleCard({ vehicle, featured = false }: VehicleCardPr
 
         <div className="flex items-end justify-between pt-[18px] border-t border-border">
           <div>
-            <div className="font-mono-custom text-[8px] tracking-[0.22em] uppercase text-text-3 mb-1">
-              Asking Price
-            </div>
-            <div
-              className={`font-display font-[300] text-text ${featured ? 'text-[34px] md:text-[38px]' : 'text-[30px]'}`}
-            >
-              {formatPrice(vehicle.price)}
-            </div>
+            {vehicle.status !== 'sold' ? (
+              <>
+                <div className="font-mono-custom text-[8px] tracking-[0.22em] uppercase text-text-3 mb-1">
+                  Asking Price
+                </div>
+                <div
+                  className={`font-display font-[300] text-text ${featured ? 'text-[34px] md:text-[38px]' : 'text-[30px]'}`}
+                >
+                  {formatPrice(vehicle.price)}
+                </div>
+              </>
+            ) : (
+              <div className="font-mono-custom text-[10px] tracking-[0.28em] uppercase text-text-3">
+                Sold
+              </div>
+            )}
           </div>
           <div className="w-[38px] h-[38px] border border-border flex items-center justify-center text-text-3 text-[16px] transition-all duration-300 group-hover:border-gold group-hover:text-gold group-hover:bg-[rgba(201,168,76,0.08)]">
             →
