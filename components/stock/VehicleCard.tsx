@@ -24,7 +24,7 @@ export default function VehicleCard({ vehicle, featured = false }: VehicleCardPr
       <div
         className={`overflow-hidden bg-bg-3 relative ${featured ? 'aspect-[21/9]' : 'aspect-[16/10]'}`}
       >
-        <div className="w-full h-full transition-transform duration-[700ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.06] flex items-center justify-center">
+        <div className={`w-full h-full transition-transform duration-[700ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.06] flex items-center justify-center${vehicle.status === 'sold' ? ' grayscale opacity-75' : ''}`}>
           {coverPhoto ? (
             <Image
               src={coverPhoto}
@@ -40,6 +40,15 @@ export default function VehicleCard({ vehicle, featured = false }: VehicleCardPr
 
         {/* Gradient on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.45)] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
+
+        {/* Sold overlay */}
+        {vehicle.status === 'sold' && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="font-mono-custom text-[10px] tracking-[0.4em] uppercase px-[18px] py-[8px] border border-white/40 text-white/80 bg-[rgba(0,0,0,0.55)] rotate-[-12deg]">
+              Sold
+            </div>
+          </div>
+        )}
 
         <div className="absolute top-[14px] right-[14px]">
           <Badge status={vehicle.status} />
