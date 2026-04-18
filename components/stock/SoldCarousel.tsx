@@ -6,7 +6,11 @@ import type { Vehicle } from '@/types/vehicle';
 
 export default function SoldCarousel({ vehicles }: { vehicles: Vehicle[] }) {
   const n = vehicles.length;
+  // Double the list so we can always scroll forward seamlessly
+  const track = n > 1 ? [...vehicles, ...vehicles] : vehicles;
+
   const [index, setIndex] = useState(0);
+  const [animate, setAnimate] = useState(true);
   const [paused, setPaused] = useState(false);
   const [visibleCount, setVisibleCount] = useState(3);
 
@@ -21,21 +25,48 @@ export default function SoldCarousel({ vehicles }: { vehicles: Vehicle[] }) {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const advance = useCallback(() => {
-    setIndex(i => (i + 1) % n);
-  }, [n]);
+  // After the transition to index n, silently reset to 0
+  useEffect(() => {
+    if (index < n) return;
+    const t = setTimeout(() => {
+      setAnimate(false);
+      setIndex(index - n);
+    }, 700);
+    return () => clearTimeout(t);
+  }, [index, n]);
 
   useEffect(() => {
-    if (paused || n <= visibleCount) return;
+    if (animate) return;
+    const t = setTimeout(() => setAnimate(true), 32);
+    return () => clearTimeout(t);
+  }, [animate]);
+
+  const advance = useCallback(() => {
+    setIndex(i => i + 1);
+  }, []);
+
+  useEffect(() => {
+    if (paused || n < 2) return;
     const t = setInterval(advance, 5000);
     return () => clearInterval(t);
-  }, [paused, advance, n, visibleCount]);
+  }, [paused, advance, n]);
 
-  const goPrev = () => setIndex(i => (i - 1 + n) % n);
-  const goNext = () => advance();
+  const goPrev = useCallback(() => {
+    if (index === 0) {
+      // Jump to the mirrored position in the second copy, then animate back one
+      setAnimate(false);
+      setIndex(n);
+      setTimeout(() => {
+        setAnimate(true);
+        setIndex(n - 1);
+      }, 32);
+    } else {
+      setIndex(i => i - 1);
+    }
+  }, [index, n]);
 
   const cardWidth = 100 / Math.min(visibleCount, n);
-  const translateX = -(index * cardWidth);
+  const dotIndex = index % n;
 
   return (
     <div
@@ -45,12 +76,15 @@ export default function SoldCarousel({ vehicles }: { vehicles: Vehicle[] }) {
     >
       <div className="overflow-hidden">
         <div
-          className="flex transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
-          style={{ transform: `translateX(${translateX}%)` }}
+          className="flex"
+          style={{
+            transform: `translateX(${-(index * cardWidth)}%)`,
+            transition: animate ? 'transform 700ms cubic-bezier(0.25,0.46,0.45,0.94)' : 'none',
+          }}
         >
-          {vehicles.map((vehicle) => (
+          {track.map((vehicle, i) => (
             <div
-              key={vehicle.id}
+              key={`${i}-${vehicle.id}`}
               style={{ width: `${cardWidth}%`, flexShrink: 0 }}
               className="pr-[2px] last:pr-0"
             >
@@ -60,7 +94,7 @@ export default function SoldCarousel({ vehicles }: { vehicles: Vehicle[] }) {
         </div>
       </div>
 
-      {n > visibleCount && (
+      {n > 1 && (
         <div className="flex items-center justify-between mt-6 px-1">
           <button
             onClick={goPrev}
@@ -76,7 +110,7 @@ export default function SoldCarousel({ vehicles }: { vehicles: Vehicle[] }) {
                 key={i}
                 onClick={() => setIndex(i)}
                 className={`transition-all duration-300 rounded-full h-[3px] ${
-                  i === index ? 'w-[20px] bg-gold' : 'w-[6px] bg-border hover:bg-text-3'
+                  i === dotIndex ? 'w-[20px] bg-gold' : 'w-[6px] bg-border hover:bg-text-3'
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
               />
@@ -84,7 +118,7 @@ export default function SoldCarousel({ vehicles }: { vehicles: Vehicle[] }) {
           </div>
 
           <button
-            onClick={goNext}
+            onClick={advance}
             className="w-[38px] h-[38px] border border-border flex items-center justify-center text-text-3 text-[16px] transition-all duration-300 hover:border-gold hover:text-gold hover:bg-[rgba(201,168,76,0.08)]"
             aria-label="Next"
           >
