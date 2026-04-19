@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CTABand from '@/components/home/CTABand';
+import ServicesSection from '@/components/home/ServicesSection';
 import { BUSINESS } from '@/lib/constants';
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default function AboutPage() {
             className="font-display font-[300] leading-[1.0]"
             style={{ fontSize: 'clamp(44px, 6vw, 72px)' }}
           >
-            About <em className="italic text-gold-hi">MB Auto Collective</em>
+            Why <em className="italic text-gold-hi">Us</em>
           </h1>
         </div>
 
@@ -82,20 +83,8 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Services strip */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-border border-t border-border">
-          {[
-            ['01', 'Buy', 'Browse our handpicked selection of prestige and performance vehicles. Every car is inspected and prepared to the highest standard.'],
-            ['02', 'Sell', 'We offer fair, transparent valuations and a hassle-free process. Reach a qualified buyer without the headaches of private sale.'],
-            ['03', 'Finance', 'We work with trusted finance brokers to secure competitive rates tailored to your situation.'],
-          ].map(([n, t, b]) => (
-            <div key={n} className="bg-bg-2 px-9 py-11">
-              <div className="font-mono-custom text-[9px] tracking-[0.3em] text-gold-lo mb-5">{n}</div>
-              <div className="font-display text-[28px] font-[400] mb-3">{t}</div>
-              <p className="text-[13px] text-text-2 leading-[1.85]">{b}</p>
-            </div>
-          ))}
-        </div>
+        {/* Why Buyers Choose Us — 6-panel grid */}
+        <ServicesSection />
 
         <CTABand />
       </main>
