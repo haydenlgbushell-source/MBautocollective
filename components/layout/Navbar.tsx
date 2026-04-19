@@ -6,10 +6,11 @@ import { usePathname } from 'next/navigation';
 import { BUSINESS } from '@/lib/constants';
 
 const NAV_LINKS = [
-  { href: '/stock',         label: 'Inventory' },
-  { href: '/car-valuation', label: 'Trade-In' },
-  { href: '/finance',       label: 'Finance' },
-  { href: '/about',         label: 'About' },
+  { href: '/stock',          label: 'Inventory' },
+  { href: '/car-sourcing',   label: 'Source a Car' },
+  { href: '/car-valuation',  label: 'Trade-In' },
+  { href: '/finance',        label: 'Finance' },
+  { href: '/about',          label: 'About' },
 ];
 
 export default function Navbar() {
