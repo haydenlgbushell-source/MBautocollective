@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PhotoUploader from './PhotoUploader';
-import { BODY_TYPES, TRANSMISSIONS, FUEL_TYPES, STATUSES } from '@/lib/constants';
+import { BODY_TYPES, TRANSMISSIONS, FUEL_TYPES, STATUSES, FEATURE_CATEGORIES } from '@/lib/constants';
 import type { Vehicle, VehicleInsert } from '@/types/vehicle';
 
 interface VehicleFormProps {
@@ -41,6 +41,26 @@ export default function VehicleForm({ vehicle, mode }: VehicleFormProps) {
   });
 
   const [featureInput, setFeatureInput] = useState('');
+  const [featureSearch, setFeatureSearch] = useState('');
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+
+  const toggleCategory = (label: string) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      next.has(label) ? next.delete(label) : next.add(label);
+      return next;
+    });
+  };
+
+  const toggleFeature = (feat: string) => {
+    setForm((f) => {
+      const current = f.features ?? [];
+      return {
+        ...f,
+        features: current.includes(feat) ? current.filter((x) => x !== feat) : [...current, feat],
+      };
+    });
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -276,40 +296,125 @@ export default function VehicleForm({ vehicle, mode }: VehicleFormProps) {
       </FormSection>
 
       {/* Features */}
-      <FormSection title="Features">
-        <div className="flex gap-2 mb-3">
-          <input
-            value={featureInput}
-            onChange={(e) => setFeatureInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addFeature(); } }}
-            placeholder="e.g. Sunroof"
-            className={`${inputCls} flex-1`}
-          />
-          <button
-            type="button"
-            onClick={addFeature}
-            className="px-5 bg-bg-3 border border-border text-text-2 font-body text-[10px] tracking-[0.15em] uppercase hover:border-gold-lo hover:text-gold transition-all"
-          >
-            Add
-          </button>
+      <FormSection title={`Features${form.features?.length ? ` (${form.features.length} selected)` : ''}`}>
+        {/* Search */}
+        <input
+          value={featureSearch}
+          onChange={(e) => setFeatureSearch(e.target.value)}
+          placeholder="Search features…"
+          className={`${inputCls} mb-4`}
+        />
+
+        {/* Categorised checkboxes */}
+        <div className="space-y-2 mb-5">
+          {FEATURE_CATEGORIES.map((cat) => {
+            const filtered = featureSearch
+              ? cat.features.filter((f) => f.toLowerCase().includes(featureSearch.toLowerCase()))
+              : cat.features;
+            if (featureSearch && filtered.length === 0) return null;
+            const selectedCount = filtered.filter((f) => form.features?.includes(f)).length;
+            const isOpen = expandedCategories.has(cat.label) || featureSearch.length > 0;
+            return (
+              <div key={cat.label} className="border border-border">
+                <button
+                  type="button"
+                  onClick={() => toggleCategory(cat.label)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-bg-2 hover:bg-bg-3 transition-colors"
+                >
+                  <span className="font-mono-custom text-[9px] tracking-[0.22em] uppercase text-text-2">
+                    {cat.label}
+                  </span>
+                  <span className="flex items-center gap-3">
+                    {selectedCount > 0 && (
+                      <span className="font-mono-custom text-[9px] tracking-[0.1em] text-gold">
+                        {selectedCount} selected
+                      </span>
+                    )}
+                    <span className="text-text-3 text-[11px]">{isOpen ? '▲' : '▼'}</span>
+                  </span>
+                </button>
+                {isOpen && (
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-1 px-4 py-3 bg-bg border-t border-border">
+                    {filtered.map((feat) => {
+                      const checked = form.features?.includes(feat) ?? false;
+                      return (
+                        <label
+                          key={feat}
+                          className="flex items-center gap-2 cursor-pointer py-[5px] group"
+                        >
+                          <span
+                            className={`w-4 h-4 border flex-shrink-0 flex items-center justify-center transition-colors ${
+                              checked ? 'bg-gold border-gold' : 'border-border group-hover:border-gold-lo'
+                            }`}
+                          >
+                            {checked && (
+                              <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                                <path d="M1 3L3.5 5.5L8 1" stroke="#0a0a0a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            )}
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleFeature(feat)}
+                            className="sr-only"
+                          />
+                          <span className="font-body text-[12px] text-text-2 group-hover:text-text transition-colors leading-tight">
+                            {feat}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {form.features?.map((f) => (
-            <span
-              key={f}
-              className="inline-flex items-center gap-2 font-mono-custom text-[9px] tracking-[0.15em] uppercase px-3 py-[6px] border border-border text-text-2"
+
+        {/* Custom / freeform feature entry */}
+        <div className="border-t border-border pt-4">
+          <div className="font-mono-custom text-[9px] tracking-[0.22em] uppercase text-text-3 mb-2">
+            Custom Feature
+          </div>
+          <div className="flex gap-2 mb-3">
+            <input
+              value={featureInput}
+              onChange={(e) => setFeatureInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addFeature(); } }}
+              placeholder="Type a feature not listed above…"
+              className={`${inputCls} flex-1`}
+            />
+            <button
+              type="button"
+              onClick={addFeature}
+              className="px-5 bg-bg-3 border border-border text-text-2 font-body text-[10px] tracking-[0.15em] uppercase hover:border-gold-lo hover:text-gold transition-all"
             >
-              {f}
-              <button
-                type="button"
-                onClick={() => removeFeature(f)}
-                className="text-text-3 hover:text-red-400 transition-colors text-[10px]"
-              >
-                ✕
-              </button>
-            </span>
-          ))}
+              Add
+            </button>
+          </div>
         </div>
+
+        {/* Selected features summary */}
+        {(form.features?.length ?? 0) > 0 && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {form.features?.map((f) => (
+              <span
+                key={f}
+                className="inline-flex items-center gap-2 font-mono-custom text-[9px] tracking-[0.15em] uppercase px-3 py-[6px] border border-gold-lo text-gold bg-[rgba(180,143,75,0.06)]"
+              >
+                {f}
+                <button
+                  type="button"
+                  onClick={() => removeFeature(f)}
+                  className="text-gold-lo hover:text-red-400 transition-colors text-[10px]"
+                >
+                  ✕
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
       </FormSection>
 
       {/* Photos */}
