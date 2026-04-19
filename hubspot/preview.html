@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MB Auto Collective — Email Template Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@200;300;400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0a;
+      --bg-2:      #111111;
+      --bg-3:      #1c1c1e;
+      --gold:      #b8963e;
+      --gold-hi:   #d4af6a;
+      --gold-lo:   #7a6428;
+      --border:    rgba(184,150,62,0.25);
+      --border-2:  rgba(184,150,62,0.4);
+      --text:      #f5f2ed;
+      --text-2:    #a09890;
+      --text-3:    #878177;
+      --serif:     'Cormorant Garamond', Georgia, serif;
+      --sans:      'Montserrat', Arial, sans-serif;
+      --mono:      'DM Mono', monospace;
+    }
+
+    html { background: #050505; }
+
+    body {
+      font-family: var(--sans);
+      background: #050505;
+      color: var(--text);
+      min-height: 100vh;
+      padding: 60px 20px;
+    }
+
+    /* ── Page chrome ── */
+    .page-label {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .page-label span {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 300;
+      color: var(--text-3);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      padding: 6px 18px;
+    }
+
+    .template-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 80px;
+    }
+
+    .template-block {
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .template-label {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .template-label-text {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--text-3);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+    .template-label-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Email shell (mimics email client viewport) ── */
+    .email-shell {
+      background: var(--bg);
+      padding: 48px 40px;
+    }
+
+    /* ── Email card ── */
+    .email-card {
+      max-width: 600px;
+      margin: 0 auto;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HEADER ── */
+    .email-header {
+      background: var(--bg-2);
+      border-bottom: 2px solid var(--gold);
+      padding: 36px 48px;
+      text-align: center;
+    }
+    .logo-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border-2);
+      margin-bottom: 16px;
+    }
+    .logo-box span {
+      font-family: var(--serif);
+      font-size: 17px;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+    }
+    .brand-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .brand-sub {
+      font-size: 9px;
+      font-weight: 300;
+      color: var(--text-2);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    /* ── HERO ── */
+    .email-hero {
+      background: var(--bg);
+      padding: 56px 48px 48px;
+      text-align: center;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .email-hero::before {
+      content: 'MB';
+      position: absolute;
+      font-family: var(--serif);
+      font-size: 260px;
+      font-weight: 300;
+      color: rgba(184,150,62,0.03);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+    .section-eyebrow {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 18px;
+    }
+    .hero-h1 {
+      font-family: var(--serif);
+      font-size: 52px;
+      font-weight: 300;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.08;
+      margin-bottom: 22px;
+    }
+    .hero-h1 em { color: var(--gold-hi); }
+    .hero-body {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--text-2);
+      line-height: 1.85;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    /* ── Divider ── */
+    .gold-rule {
+      height: 1px;
+      background: var(--border);
+      margin: 0 48px;
+    }
+    .gold-rule-full {
+      height: 2px;
+      background: var(--gold);
+    }
+
+    /* ── DETAILS CARD ── */
+    .email-section {
+      background: var(--bg);
+      padding: 40px 48px;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .email-section-dark {
+      background: var(--bg-2);
+      padding: 40px 48px;
+      border: 1px solid var(--border);
+      border-top: none;
+    }
+    .section-label {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      display: block;
+    }
+    .detail-card {
+      border: 1px solid var(--border);
+      background: var(--bg-2);
+      padding: 28px 30px;
+    }
+    .detail-row {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 0 16px;
+      align-items: start;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(184,150,62,0.12);
+    }
+    .detail-row:first-child { padding-top: 0; }
+    .detail-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .detail-key {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--text-3);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding-top: 3px;
+    }
+    .detail-val {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .detail-val-vehicle {
+      font-family: var(--serif);
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--gold);
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    /* ── STEPS ── */
+    .step {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 0 14px;
+      align-items: start;
+      margin-bottom: 22px;
+    }
+    .step:last-child { margin-bottom: 0; }
+    .step-num {
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--border-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+    .step-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.06em;
+      margin-bottom: 5px;
+    }
+    .step-body {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--text-2);
+      line-height: 1.75;
+    }
+
+    /* ── CTA ── */
+    .email-cta {
+      background: var(--bg);
+      padding: 44px 48px;
+      text-align: center;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .cta-heading {
+      font-family: var(--serif);
+      font-size: 30px;
+      font-weight: 300;
+      color: var(--text);
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+    .cta-sub {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--text-2);
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--bg);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 15px 30px;
+      font-family: var(--sans);
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: var(--gold-hi); }
+    .btn-ghost {
+      display: inline-block;
+      background: transparent;
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 15px 30px;
+      border: 1px solid var(--border-2);
+      font-family: var(--sans);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--gold); color: var(--gold-hi); }
+    .btn-primary-lg {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--bg);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 16px 40px;
+      font-family: var(--sans);
+      transition: background 0.2s;
+    }
+    .btn-primary-lg:hover { background: var(--gold-hi); }
+
+    /* ── FOOTER ── */
+    .email-footer {
+      background: var(--bg-2);
+      padding: 36px 48px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-top: none;
+    }
+    .footer-brand {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-2);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .footer-addr {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--text-3);
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+    .footer-links {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--text-3);
+      margin-bottom: 18px;
+    }
+    .footer-links a { color: var(--gold); text-decoration: none; }
+    .footer-rule {
+      width: 40px;
+      height: 1px;
+      background: var(--border);
+      margin: 0 auto 18px;
+    }
+    .footer-unsub {
+      font-size: 10px;
+      font-weight: 300;
+      color: var(--text-3);
+      line-height: 1.7;
+    }
+    .footer-unsub a { color: var(--text-3); text-decoration: underline; text-underline-offset: 2px; }
+
+    /* ── PILLARS (welcome only) ── */
+    .pillars {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .pillar {
+      padding: 36px 28px;
+      text-align: center;
+      border-right: 1px solid rgba(184,150,62,0.2);
+    }
+    .pillar:last-child { border-right: none; }
+    .pillar-title {
+      font-family: var(--serif);
+      font-size: 28px;
+      font-weight: 300;
+      color: var(--gold);
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+    .pillar-body {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--text-2);
+      line-height: 1.75;
+    }
+
+    /* ── QUOTE ── */
+    .email-quote {
+      background: var(--bg);
+      padding: 44px 48px;
+      text-align: center;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .quote-mark {
+      font-family: var(--serif);
+      font-size: 64px;
+      font-weight: 300;
+      color: rgba(184,150,62,0.25);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .quote-text {
+      font-family: var(--serif);
+      font-size: 21px;
+      font-weight: 300;
+      color: var(--text);
+      font-style: italic;
+      line-height: 1.6;
+      max-width: 440px;
+      margin: 0 auto 18px;
+    }
+    .quote-author {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .stars { color: var(--gold); font-size: 14px; letter-spacing: 3px; }
+
+    /* ── CONTACT BAR ── */
+    .contact-bar {
+      background: var(--bg);
+      padding: 28px 48px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-top: 1px solid var(--border);
+    }
+    .contact-label {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--text-3);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .contact-links {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--text-2);
+      line-height: 1.8;
+      margin-bottom: 6px;
+    }
+    .contact-links a { color: var(--gold); text-decoration: none; font-weight: 400; }
+    .contact-addr {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--text-3);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-label">
+    <span>HubSpot Email Templates &nbsp;/&nbsp; Concept Preview &nbsp;/&nbsp; MB Auto Collective</span>
+  </div>
+
+  <div class="template-group">
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  TEMPLATE 1 — Enquiry Confirmation                 -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="template-block">
+      <div class="template-label">
+        <span class="template-label-text">01 — enquiry-confirmation.html</span>
+        <div class="template-label-line"></div>
+        <span class="template-label-text">Trigger: vehicle enquiry submitted</span>
+      </div>
+
+      <div class="email-shell">
+        <div class="email-card">
+
+          <!-- Header -->
+          <div class="email-header">
+            <div class="logo-box"><span>MB</span></div>
+            <span class="brand-name">MB Auto Collective</span>
+            <span class="brand-sub">Waterloo, Sydney NSW</span>
+          </div>
+
+          <!-- Hero -->
+          <div class="email-hero">
+            <span class="section-eyebrow">Enquiry Received</span>
+            <h1 class="hero-h1">Thank You,<br>James</h1>
+            <p class="hero-body">We've received your enquiry and a member of our team will personally reach out to you within 24 hours.</p>
+          </div>
+
+          <div class="gold-rule"></div>
+
+          <!-- Details -->
+          <div class="email-section">
+            <span class="section-label">Your Enquiry Details</span>
+            <div class="detail-card">
+              <div class="detail-row">
+                <span class="detail-key">Name</span>
+                <span class="detail-val">James Wilson</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Email</span>
+                <span class="detail-val">james@example.com</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Vehicle</span>
+                <span class="detail-val-vehicle">2023 Porsche 911 GT3 — Enquiry from James</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Steps -->
+          <div class="email-section-dark">
+            <span class="section-label">What Happens Next</span>
+            <div class="step">
+              <div class="step-num">1</div>
+              <div>
+                <div class="step-title">Personal Review</div>
+                <div class="step-body">Matt personally reviews every enquiry to ensure we find the right fit for you.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div>
+                <div class="step-title">Direct Contact</div>
+                <div class="step-body">We'll reach out via phone or email within 24 hours to talk through the details.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div>
+                <div class="step-title">Inspection &amp; Delivery</div>
+                <div class="step-body">Arrange an inspection at our Waterloo showroom or opt for nationwide delivery.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <div class="email-cta">
+            <p class="cta-heading">Need to reach us sooner?</p>
+            <p class="cta-sub">Our team is available seven days a week.</p>
+            <div class="btn-row">
+              <a href="#" class="btn-primary">Call Matt</a>
+              <a href="#" class="btn-ghost">Browse Stock</a>
+            </div>
+          </div>
+
+          <div class="gold-rule-full"></div>
+
+          <!-- Footer -->
+          <div class="email-footer">
+            <p class="footer-brand">MB Auto Collective</p>
+            <p class="footer-addr">1/267 Young Street, Waterloo NSW 2017<br>ABN: 44 637 706 953 &nbsp;&middot;&nbsp; Licence: MD081672</p>
+            <p class="footer-links">
+              <a href="#">mbautocollective.com</a> &nbsp;&middot;&nbsp;
+              <a href="#">matt@mbautocollective.com</a> &nbsp;&middot;&nbsp;
+              <a href="#">0400 003 994</a>
+            </p>
+            <div class="footer-rule"></div>
+            <p class="footer-unsub">You received this email because you submitted an enquiry on our website.<br>
+              <a href="#">Unsubscribe</a>
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  TEMPLATE 2 — Welcome                              -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="template-block">
+      <div class="template-label">
+        <span class="template-label-text">02 — welcome.html</span>
+        <div class="template-label-line"></div>
+        <span class="template-label-text">Trigger: new contact created</span>
+      </div>
+
+      <div class="email-shell">
+        <div class="email-card">
+
+          <!-- Header -->
+          <div class="email-header">
+            <div class="logo-box"><span>MB</span></div>
+            <span class="brand-name">MB Auto Collective</span>
+            <span class="brand-sub">Waterloo, Sydney NSW &nbsp;&middot;&nbsp; Est. 2012</span>
+          </div>
+
+          <!-- Hero -->
+          <div class="email-hero">
+            <span class="section-eyebrow">Welcome</span>
+            <h1 class="hero-h1">Sarah,<br><em>you're in good hands.</em></h1>
+            <p class="hero-body">Thank you for connecting with MB Auto Collective — Sydney's trusted specialist for premium vehicles. We look forward to helping you find exactly what you're after.</p>
+          </div>
+
+          <div class="gold-rule"></div>
+
+          <!-- Pillars -->
+          <div class="pillars">
+            <div class="pillar">
+              <p class="pillar-title">Buy</p>
+              <p class="pillar-body">Hand-picked premium vehicles presented in showroom condition.</p>
+            </div>
+            <div class="pillar">
+              <p class="pillar-title">Sell</p>
+              <p class="pillar-body">Transparent, competitive valuations and a seamless sale process.</p>
+            </div>
+            <div class="pillar">
+              <p class="pillar-title">Drive</p>
+              <p class="pillar-body">Finance options tailored to your budget with fast approvals.</p>
+            </div>
+          </div>
+
+          <div class="gold-rule"></div>
+
+          <!-- Quote -->
+          <div class="email-quote">
+            <div class="quote-mark">&ldquo;</div>
+            <p class="quote-text">Matt made the experience so easy. A one stop shop and a five star service. I would recommend MB Auto Collective to anyone.</p>
+            <p class="quote-author">Brian Meadows</p>
+            <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          </div>
+
+          <!-- CTA dark panel -->
+          <div class="email-section-dark" style="text-align:center;">
+            <p class="cta-heading" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:30px;font-weight:300;font-style:italic;color:#f5f2ed;margin-bottom:8px;">Ready to find your next car?</p>
+            <p class="cta-sub">Browse our current stock of hand-selected premium vehicles.</p>
+            <a href="#" class="btn-primary-lg">View All Stock</a>
+          </div>
+
+          <!-- Contact bar -->
+          <div class="contact-bar">
+            <p class="contact-label">Get In Touch</p>
+            <p class="contact-links">
+              <a href="#">0400 003 994</a>
+              &nbsp;&middot;&nbsp;
+              <a href="#">matt@mbautocollective.com</a>
+            </p>
+            <p class="contact-addr">1/267 Young Street, Waterloo NSW 2017 &nbsp;&middot;&nbsp; Open 7 days</p>
+          </div>
+
+          <div class="gold-rule-full"></div>
+
+          <!-- Footer -->
+          <div class="email-footer">
+            <p class="footer-brand">MB Auto Collective</p>
+            <p class="footer-addr">1/267 Young Street, Waterloo NSW 2017<br>ABN: 44 637 706 953 &nbsp;&middot;&nbsp; Licence: MD081672</p>
+            <div class="footer-rule"></div>
+            <p class="footer-unsub">
+              &copy; 2024 MB Auto Collective. All rights reserved.<br>
+              <a href="#">Unsubscribe</a> &nbsp;&middot;&nbsp; <a href="#" style="color:var(--gold);text-decoration:none;">mbautocollective.com</a>
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /template-group -->
+
+</body>
+</html>
