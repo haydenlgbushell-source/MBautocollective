@@ -167,6 +167,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 <BookViewingButton vehicle={vehicle} />
               )}
 
+
               {/* Call */}
               <a
                 href={BUSINESS.phoneHref}
