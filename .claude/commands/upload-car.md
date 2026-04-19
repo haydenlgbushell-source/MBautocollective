@@ -1,46 +1,53 @@
 # Upload Car Listing
 
 Use this skill when the user pastes car listing details and wants them saved to the backend.
+Always UPDATE if the vehicle already exists (match by stock_number or VIN) — never duplicate.
 
 ## Supabase project
 Project ID: `tgeqaadacfwmfvweqlss`
 
-## Field mapping
+---
 
-Map the pasted listing fields to database columns as follows:
+## Section 1 — Core Details
 
 | Listing field | DB column | Notes |
 |---|---|---|
 | Title | make, model, variant, year, body_type | Parse: `{year} {make} {model} {body} {variant}` |
-| Price | price | Strip `$`, commas, and ` Excl. Govt. Charges` → integer |
+| Price | price | Strip `$`, commas, ` Excl. Govt. Charges` → integer |
+| Stock Number | stock_number | Store as-is (text) |
+| VIN | vin | Store as-is |
+
+---
+
+## Section 2 — Specifications
+
+| Listing field | DB column | Notes |
+|---|---|---|
 | Kilometers | kilometres | Strip commas → integer |
 | Colour | colour | Store as-is |
 | Transmission | transmission | Map to `'Automatic'` or `'Manual'` |
 | Fuel | fuel_type | Map to `'Petrol'`, `'Diesel'`, `'Hybrid'`, or `'Electric'` |
-| Body | body_type | Map to schema enum: Sedan, SUV, Coupé, Convertible, Wagon, Hatchback, Ute |
+| Body | body_type | Map to schema enum (see below) |
 | Cylinders | cylinders | e.g. `T4` |
-| Engine Size | engine | Combine with Engine Type: `{size} {type}` e.g. `2.0L TURBO DIRECT F/INJ` |
+| Engine Size + Engine Type | engine | Combine: `{size} {type}` e.g. `2.0L TURBO DIRECT F/INJ` |
 | Engine Capacity | engine_capacity | Integer (cc), e.g. `1969` |
-| Engine Type | engine | Combined into engine field with Engine Size |
-| VIN | vin | Store as-is |
-| Reg Plate | reg_plate | Store as-is |
-| Reg Expiry | reg_expiry | Store as-is (DD/MM/YYYY) |
 | Seat Capacity | seats | Integer |
 | Doors | doors | Integer |
-| Stock Number | stock_number | Store as-is (text) |
+| Reg Plate | reg_plate | Store as-is |
+| Reg Expiry | reg_expiry | Store as-is (DD/MM/YYYY) |
 | Short Description | short_description | Store as-is |
 
-## Transmission mapping
+### Transmission mapping
 - Contains `AUTOMATIC` → `'Automatic'`
 - Contains `MANUAL` → `'Manual'`
 
-## Fuel type mapping
+### Fuel type mapping
 - Contains `Petrol` or `ULP` → `'Petrol'`
 - Contains `Diesel` → `'Diesel'`
 - Contains `Hybrid` or `MHEV` or `PHEV` → `'Hybrid'`
 - Contains `Electric` or `EV` → `'Electric'`
 
-## Body type mapping
+### Body type mapping
 - `WAGON` → `'Wagon'`
 - `SEDAN` → `'Sedan'`
 - `SUV` or `4WD` → `'SUV'`
@@ -49,94 +56,141 @@ Map the pasted listing fields to database columns as follows:
 - `CONVERTIBLE` or `CABRIOLET` → `'Convertible'`
 - `UTE` or `UTILITY` → `'Ute'`
 
-## Features
+---
 
-The Features section uses a predefined checkbox list defined in `STANDARD_FEATURES` in `/lib/constants.ts`.
+## Section 3 — Description
 
-**Step 1 — Match standard features**: For each item in the pasted Features list, check if it maps to a predefined standard feature name. Common mappings:
+Store the full description text in the `description` column as-is.
+Always include `description` in both INSERT and UPDATE — never omit it.
 
-| Pasted feature | Standard feature |
+---
+
+## Section 4 — Features
+
+Process every feature in the pasted list through two steps:
+
+### Step 1 — Match against standard features
+
+Check each pasted feature against the predefined standard list (`STANDARD_FEATURES` in `/lib/constants.ts`).
+Use the mapping table below to normalise names. One pasted feature can produce multiple standard matches.
+
+| Pasted feature | Standard feature(s) |
 |---|---|
-| Blind Spot Information System | Blind Spot Monitoring |
-| Forward Collision Mitigation | Autonomous Emergency Braking |
-| Dual Front Airbags Package | Dual Front Airbags |
+| Adaptive Cruise Control | Adaptive Cruise Control |
 | Airbag - Knee Driver | Driver Knee Airbag |
-| Instrument Cluster Display - * Inch | Digital Instrument Cluster |
-| Multi-media System with * Touchscreen | Touchscreen Infotainment |
-| High Performance Sound System | Premium Sound System |
+| Auto Climate Control with Dual Temp Zones | Auto Climate Control, Dual Zone Climate Control |
+| Blind Spot Information System | Blind Spot Monitoring |
+| Bluetooth Connectivity | Bluetooth |
+| Cross Traffic Alert | Cross Traffic Alert |
+| Curtain Airbags | Curtain Airbags |
 | Digital Audio Broadcast Radio | DAB Digital Radio |
-| Remote Engine Start System | Remote Start |
-| Surround Camera System | Surround View Camera |
+| Dual Front Airbags Package | Dual Front Airbags |
+| Forward Collision Mitigation | Autonomous Emergency Braking |
+| Gloss Black Roof Rails / Roof Rails * | Roof Rails |
+| High Performance Sound System | Premium Sound System |
+| Hill Descent Control | Hill Descent Control |
+| Hill Start Assist | Hill Start Assist |
+| Instrument Cluster Display - * Inch | Digital Instrument Cluster |
+| Keyless Entry | Keyless Entry |
+| Lane Keeping Assist | Lane Keeping Assist |
+| LED Headlights | LED Headlights |
+| Multi-media System with * Touchscreen | Touchscreen Infotainment |
 | Park Assist Front & Rear | Park Assist (Front & Rear) |
-| Road Sign Information | Traffic Sign Recognition |
-| Tyre Pressure Monitoring System | Tyre Pressure Monitoring |
-| Wireless Phone Charge | Wireless Charging |
-| USB Input Socket / USB Charging Port* | USB Ports |
-| Voice Recognition System | Voice Recognition |
-| Power front seat Driver/memory | Power Driver Seat + Driver Memory Seat |
+| Power front seat Driver/memory | Power Driver Seat, Driver Memory Seat |
 | Power front seat Passenger | Power Passenger Seat |
 | Power Lumbar Support Driver * | Power Lumbar Support (Driver) |
 | Power Lumbar Support Passenger * | Power Lumbar Support (Passenger) |
-| Auto Climate Control with Dual Temp Zones | Auto Climate Control + Dual Zone Climate Control |
-| Rain Sensor | Rain Sensing Wipers |
-| Gloss Black Roof Rails / Roof Rails * | Roof Rails |
-| Trailer Module Preparation | Tow Bar Preparation |
-| Bluetooth Connectivity | Bluetooth |
-| 20 Inch Alloy Wheels | 20 Inch Alloy Wheels |
-| LED Headlights | LED Headlights |
-| Adaptive Cruise Control | Adaptive Cruise Control |
-| Cross Traffic Alert | Cross Traffic Alert |
-| Curtain Airbags | Curtain Airbags |
-| Side Airbags | Side Airbags |
-| Hill Descent Control | Hill Descent Control |
-| Hill Start Assist | Hill Start Assist |
-| Lane Keeping Assist | Lane Keeping Assist |
-| Rear Collision Warning | Rear Collision Warning |
-| Traffic Jam Assist | Traffic Jam Assist |
-| Keyless Entry | Keyless Entry |
 | Power Tailgate | Power Tailgate |
+| Rain Sensor | Rain Sensing Wipers |
+| Rear Collision Warning | Rear Collision Warning |
+| Remote Engine Start System | Remote Start |
+| Road Sign Information | Traffic Sign Recognition |
+| Side Airbags | Side Airbags |
+| Surround Camera System | Surround View Camera |
 | Telematics | Telematics |
+| Trailer Module Preparation | Tow Bar Preparation |
+| Traffic Jam Assist | Traffic Jam Assist |
+| Tyre Pressure Monitoring System | Tyre Pressure Monitoring |
+| USB Input Socket / USB Charging Port* | USB Ports |
+| Voice Recognition System | Voice Recognition |
+| Wireless Phone Charge | Wireless Charging |
+| 18 Inch Alloy Wheels | 18 Inch Alloy Wheels |
+| 19 Inch Alloy Wheels | 19 Inch Alloy Wheels |
+| 20 Inch Alloy Wheels | 20 Inch Alloy Wheels |
+| 21 Inch Alloy Wheels | 21 Inch Alloy Wheels |
+| Apple CarPlay | Apple CarPlay |
+| Android Auto | Android Auto |
+| Heated Front Seats / Heated Seat Front* | Heated Front Seats |
+| Heated Rear Seats | Heated Rear Seats |
+| Heated Steering Wheel | Heated Steering Wheel |
+| Navigation / Satellite Navigation | Navigation System |
+| Reversing Camera / Rear View Camera | Reversing Camera |
+| Panoramic Sunroof / Panoramic Roof | Panoramic Sunroof |
+| Sunroof / Glass Roof | Sunroof |
+| Tow Bar / Tow Pack | Tow Bar Preparation |
+| Ventilated Seats / Cooled Seats | Ventilated Front Seats |
+| LED Tail Lights | LED Tail Lights |
+| Power Folding Mirrors | Power Folding Mirrors |
 
-**Step 2 — Store**: Save only the matched standard feature names (not the raw pasted names) in the `features` array. Any pasted feature that has no standard match is discarded (not stored as custom).
+### Step 2 — Handle unmatched features
+
+Any pasted feature that does NOT match a standard feature must be stored as-is in the `features` array as a **custom feature** — do NOT discard it.
+
+### Step 3 — Build the final features array
+
+Combine: `[...matched_standard_features, ...unmatched_custom_features]`
+Store the full combined array in the `features` column.
+
+---
 
 ## Workflow
 
 ### 1. Check if vehicle already exists
 ```sql
-SELECT id, slug FROM vehicles WHERE stock_number = '{stock_number}' OR vin = '{vin}';
+SELECT id, slug FROM vehicles WHERE stock_number = '{stock_number}' OR vin = '{vin}' LIMIT 1;
 ```
 
-### 2a. If vehicle exists — UPDATE
+### 2a. If vehicle EXISTS — UPDATE (never insert a duplicate)
 ```sql
 UPDATE vehicles SET
   make = '...', model = '...', variant = '...', year = ..., price = ...,
   kilometres = ..., colour = '...', transmission = '...', body_type = '...',
   engine = '...', engine_capacity = ..., cylinders = '...', fuel_type = '...',
-  seats = ..., doors = ..., short_description = '...',
+  seats = ..., doors = ...,
+  description = '...',
+  short_description = '...',
   stock_number = '...', vin = '...', reg_plate = '...', reg_expiry = '...',
   features = ARRAY['...', '...']
-WHERE id = '...';
+WHERE id = '{existing_id}';
 ```
 
-### 2b. If vehicle does not exist — INSERT
-Generate a slug: `{year}-{make}-{model}-{variant}` lowercased, spaces→hyphens, special chars removed.
-Check for slug uniqueness and append `-2`, `-3` etc. if needed.
+### 2b. If vehicle does NOT exist — INSERT
+Generate slug: `{year}-{make}-{model}-{variant}` → lowercase, spaces→hyphens, remove special chars.
+Check slug uniqueness; append `-2`, `-3` etc. if already taken.
 
 ```sql
-INSERT INTO vehicles (slug, make, model, variant, year, price, kilometres, colour,
+INSERT INTO vehicles (
+  slug, make, model, variant, year, price, kilometres, colour,
   transmission, body_type, engine, engine_capacity, cylinders, fuel_type,
-  seats, doors, description, short_description, features, status, featured,
-  stock_number, vin, reg_plate, reg_expiry)
-VALUES ('...', ...);
+  seats, doors, description, short_description, features,
+  status, featured, stock_number, vin, reg_plate, reg_expiry
+) VALUES (
+  '...', '...', '...', '...', ..., ..., ..., '...',
+  '...', '...', '...', ..., '...', '...',
+  ..., ..., '...', '...', ARRAY['...', '...'],
+  'available', false, '...', '...', '...', '...'
+);
 ```
 
 ### 3. Verify
-After the upsert, run:
 ```sql
-SELECT id, slug, make, model, year, price, stock_number, vin, array_length(features, 1) AS feature_count
+SELECT id, slug, make, model, year, price, stock_number, vin,
+       array_length(features, 1) AS feature_count
 FROM vehicles WHERE stock_number = '...' OR vin = '...';
 ```
-Report back the result to the user.
+Report the result to the user confirming what was saved.
+
+---
 
 ## Schema columns reference
 id, slug, make, model, variant, year, price, kilometres, colour, transmission, body_type,
