@@ -130,9 +130,9 @@ async function main() {
   console.log('Forms created successfully.\n');
   console.log('=== Add these to your .env.local ===\n');
   console.log(`NEXT_PUBLIC_HUBSPOT_PORTAL_ID=${portalId}`);
-  console.log(`HUBSPOT_CONTACT_FORM_ID=${contactId}`);
-  console.log(`HUBSPOT_ENQUIRY_FORM_ID=${enquiryId}`);
-  console.log(`HUBSPOT_VALUATION_FORM_ID=${valuationId}`);
+  console.log(`NEXT_PUBLIC_HUBSPOT_CONTACT_FORM_ID=${contactId}`);
+  console.log(`NEXT_PUBLIC_HUBSPOT_ENQUIRY_FORM_ID=${enquiryId}`);
+  console.log(`NEXT_PUBLIC_HUBSPOT_VALUATION_FORM_ID=${valuationId}`);
   console.log('\n=====================================');
 }
 
