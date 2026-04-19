@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHubSpotEnquiry } from '@/lib/hubspot/enquiries';
 import { createAdminClient } from '@/lib/supabase/server';
 
+const FORM_IDS: Record<string, string | undefined> = {
+  contact: process.env.HUBSPOT_CONTACT_FORM_ID,
+  enquiry: process.env.HUBSPOT_ENQUIRY_FORM_ID,
+  valuation: process.env.HUBSPOT_VALUATION_FORM_ID,
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -11,10 +17,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
     }
 
-    // 1. Send to HubSpot
+    const formId = FORM_IDS[source];
+    const pageUri = request.headers.get('referer') ?? undefined;
+
+    // 1. Send to HubSpot (Forms API + CRM contact/deal creation)
     let hubspotResult = null;
     try {
-      hubspotResult = await createHubSpotEnquiry({ name, email, phone, message, vehicle });
+      hubspotResult = await createHubSpotEnquiry({
+        name,
+        email,
+        phone,
+        message,
+        vehicle,
+        source,
+        formId,
+        pageUri,
+      });
     } catch (err) {
       console.error('HubSpot error:', err);
       // Don't fail the request if HubSpot is down — Supabase backup is sufficient
