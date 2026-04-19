@@ -139,7 +139,7 @@ export default function Hero({ availableCount }: HeroProps) {
           <rect x="898" y="237" width="7" height="28" rx="2" fill="#b8963e" fillOpacity="0.65" />
           <rect x="899" y="239" width="4" height="24" rx="1" fill="#d4af6a" fillOpacity="0.45" />
 
-          {/* Front wheel — center x=239 */}
+          {/* Front wheel */}
           <circle cx="239" cy="330" r="76" fill="url(#hWheelGrad)" stroke="#b8963e" strokeWidth="1.5" strokeOpacity="0.45" />
           <circle cx="239" cy="330" r="56" fill="none" stroke="#b8963e" strokeWidth="0.8" strokeOpacity="0.2" />
           <line x1="239" y1="312" x2="239" y2="276" stroke="#b8963e" strokeWidth="2" strokeOpacity="0.38" />
@@ -150,7 +150,7 @@ export default function Hero({ availableCount }: HeroProps) {
           <circle cx="239" cy="330" r="18" fill="#b8963e" fillOpacity="0.12" stroke="#b8963e" strokeWidth="1.5" strokeOpacity="0.5" />
           <circle cx="239" cy="330" r="5" fill="#b8963e" fillOpacity="0.6" />
 
-          {/* Rear wheel — center x=752 */}
+          {/* Rear wheel */}
           <circle cx="752" cy="330" r="76" fill="url(#hWheelGrad)" stroke="#b8963e" strokeWidth="1.5" strokeOpacity="0.45" />
           <circle cx="752" cy="330" r="56" fill="none" stroke="#b8963e" strokeWidth="0.8" strokeOpacity="0.2" />
           <line x1="752" y1="312" x2="752" y2="276" stroke="#b8963e" strokeWidth="2" strokeOpacity="0.38" />
@@ -219,23 +219,35 @@ export default function Hero({ availableCount }: HeroProps) {
         className="relative z-10 grid grid-cols-2 md:grid-cols-4 animate-fadeup-delayed"
         style={{ borderTop: '1px solid rgba(184,150,62,0.25)', background: 'rgba(10,10,10,0.8)', backdropFilter: 'blur(20px)' }}
       >
-        {[
-          [availableCount > 0 ? availableCount.toString() : '47', 'Vehicles In Stock'],
-          ['11+', 'Years Experience'],
-          [BUSINESS.reviewScore + '★', 'Google Rating'],
-          ['100%', 'Finance Available'],
-        ].map(([num, label]) => (
+        {(
+          [
+            [availableCount > 0 ? availableCount.toString() : '47', 'Vehicles In Stock', undefined],
+            ['11+', 'Years Experience', undefined],
+            [BUSINESS.reviewScore + '\u2605', 'Google Rating', `${BUSINESS.reviewCount} reviews`],
+            ['100%', 'Finance Available', undefined],
+          ] as [string, string, string | undefined][]
+        ).map(([num, label, sub], i) => (
           <div
             key={label}
-            className="group px-0 py-7 border-r last:border-r-0 text-center transition-colors duration-300"
+            className={[
+              'group px-0 py-6 md:py-7 text-center transition-colors duration-300',
+              'border-r even:border-r-0 md:even:border-r md:last:border-r-0',
+              i < 2 ? 'max-md:border-b' : '',
+              i % 2 === 1 ? 'max-md:pr-[88px]' : '',
+            ].join(' ')}
             style={{ borderColor: 'rgba(184,150,62,0.25)' }}
           >
-            <div className="font-display text-[36px] font-[300] text-gold leading-none mb-[6px]">
+            <div className="font-display text-[28px] md:text-[36px] font-[300] text-gold leading-none mb-[4px] md:mb-[6px]">
               {num}
             </div>
-            <div className="font-mono-custom text-[9px] tracking-[0.2em] uppercase text-text-3">
+            <div className="font-mono-custom text-[8px] md:text-[9px] tracking-[0.2em] uppercase text-text-3">
               {label}
             </div>
+            {sub && (
+              <div className="font-mono-custom text-[7px] md:text-[8px] tracking-[0.15em] uppercase text-text-3 opacity-70 mt-[2px]">
+                {sub}
+              </div>
+            )}
           </div>
         ))}
       </div>
