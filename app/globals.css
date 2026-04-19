@@ -161,3 +161,129 @@ select option {
   background: var(--bg3);
   color: var(--text);
 }
+
+/* ── HubSpot embedded form — dark theme overrides ── */
+.hubspot-form fieldset {
+  max-width: 100% !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.hubspot-form .hs-form-field {
+  margin-bottom: 16px !important;
+}
+
+.hubspot-form .hs-form-field > label {
+  display: block !important;
+  font-family: var(--fm) !important;
+  font-size: 9px !important;
+  letter-spacing: 0.25em !important;
+  text-transform: uppercase !important;
+  color: var(--text3) !important;
+  margin-bottom: 7px !important;
+  font-weight: 400 !important;
+}
+
+.hubspot-form .hs-form-required {
+  color: var(--gold) !important;
+}
+
+.hubspot-form .input {
+  margin: 0 !important;
+}
+
+.hubspot-form .input input,
+.hubspot-form .input textarea,
+.hubspot-form .input select {
+  width: 100% !important;
+  background: var(--bg2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  padding: 12px 14px !important;
+  color: var(--text) !important;
+  font-family: var(--fb) !important;
+  font-size: 13px !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: border-color 0.15s !important;
+  -webkit-appearance: none !important;
+}
+
+.hubspot-form .input input:focus,
+.hubspot-form .input textarea:focus,
+.hubspot-form .input select:focus {
+  border-color: var(--gold-lo) !important;
+}
+
+.hubspot-form .input textarea {
+  resize: vertical !important;
+  min-height: 100px !important;
+}
+
+.hubspot-form .input input:-webkit-autofill,
+.hubspot-form .input input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 30px var(--bg3) inset !important;
+  -webkit-text-fill-color: var(--text) !important;
+}
+
+.hubspot-form .hs-button {
+  width: 100% !important;
+  background: var(--gold) !important;
+  color: var(--bg) !important;
+  font-family: var(--fb) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.22em !important;
+  text-transform: uppercase !important;
+  padding: 14px 36px !important;
+  font-weight: 500 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s !important;
+  margin-top: 8px !important;
+  display: block !important;
+}
+
+.hubspot-form .hs-button:hover {
+  background: var(--gold-hi) !important;
+}
+
+.hubspot-form .hs_submit {
+  margin-top: 8px !important;
+}
+
+.hubspot-form .hs-error-msgs {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 4px 0 0 !important;
+}
+
+.hubspot-form .hs-error-msgs li label {
+  font-size: 11px !important;
+  color: #f87171 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-family: var(--fb) !important;
+}
+
+.hubspot-form .submitted-message {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--text2);
+  font-family: var(--fb);
+  font-size: 13px;
+}
+
+.hubspot-form .hs-richtext,
+.hubspot-form .hs-richtext p {
+  font-family: var(--fb) !important;
+  font-size: 11px !important;
+  color: var(--text3) !important;
+  margin-bottom: 12px !important;
+}
+
+/* Hide HubSpot branding */
+.hubspot-form .hs-form-boilerplate,
+.hubspot-form .hubspot-link__container {
+  display: none !important;
+}
