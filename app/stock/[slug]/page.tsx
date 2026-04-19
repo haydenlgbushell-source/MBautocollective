@@ -132,9 +132,9 @@ export default async function VehicleDetailPage({ params }: PageProps) {
             )}
 
             {vehicle.description && (
-              <p className="text-[14px] text-text-2 leading-[1.92] mb-10 max-w-[680px]">
+              <div className="text-[14px] text-text-2 leading-[1.92] mb-10 max-w-[680px] whitespace-pre-line">
                 {vehicle.description}
-              </p>
+              </div>
             )}
 
             {/* Tabbed panel: Details / Features / Optional Extras */}

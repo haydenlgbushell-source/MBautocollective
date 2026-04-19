@@ -15,6 +15,9 @@ const SPEC_ROWS = [
   { key: 'body_type' as const, label: 'Body Type' },
   { key: 'colour' as const, label: 'Colour' },
   { key: 'seats' as const, label: 'Seats' },
+  { key: 'stock_number' as const, label: 'Stock #' },
+  { key: 'reg_plate' as const, label: 'Rego Plate' },
+  { key: 'reg_expiry' as const, label: 'Rego Expiry' },
 ];
 
 // Keyword lists drive the auto-categorisation of the flat features array

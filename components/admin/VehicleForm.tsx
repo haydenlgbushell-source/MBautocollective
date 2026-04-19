@@ -34,6 +34,10 @@ export default function VehicleForm({ vehicle, mode }: VehicleFormProps) {
     photos: vehicle?.photos ?? [],
     status: vehicle?.status ?? 'available',
     featured: vehicle?.featured ?? false,
+    stock_number: vehicle?.stock_number ?? '',
+    vin: vehicle?.vin ?? '',
+    reg_plate: vehicle?.reg_plate ?? '',
+    reg_expiry: vehicle?.reg_expiry ?? '',
   });
 
   const [featureInput, setFeatureInput] = useState('');
@@ -149,6 +153,48 @@ export default function VehicleForm({ vehicle, mode }: VehicleFormProps) {
               required
               min={0}
               placeholder="e.g. 89500"
+              className={inputCls}
+            />
+          </FormField>
+        </div>
+      </FormSection>
+
+      {/* Registration & Stock */}
+      <FormSection title="Stock & Registration">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Stock Number">
+            <input
+              name="stock_number"
+              value={form.stock_number ?? ''}
+              onChange={handleChange}
+              placeholder="e.g. 333"
+              className={inputCls}
+            />
+          </FormField>
+          <FormField label="VIN">
+            <input
+              name="vin"
+              value={form.vin ?? ''}
+              onChange={handleChange}
+              placeholder="e.g. LYVXZL5A7PL935045"
+              className={inputCls}
+            />
+          </FormField>
+          <FormField label="Rego Plate">
+            <input
+              name="reg_plate"
+              value={form.reg_plate ?? ''}
+              onChange={handleChange}
+              placeholder="e.g. YMH63K"
+              className={inputCls}
+            />
+          </FormField>
+          <FormField label="Rego Expiry">
+            <input
+              name="reg_expiry"
+              value={form.reg_expiry ?? ''}
+              onChange={handleChange}
+              placeholder="e.g. 25/10/2026"
               className={inputCls}
             />
           </FormField>
