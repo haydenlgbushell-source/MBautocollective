@@ -7,6 +7,7 @@ import { BUSINESS } from '@/lib/constants';
 
 const NAV_LINKS = [
   { href: '/stock',         label: 'Inventory' },
+  { href: '/source-a-car',  label: 'Source a Car' },
   { href: '/car-valuation', label: 'Trade-In' },
   { href: '/finance',       label: 'Finance' },
   { href: '/about',         label: 'About' },
