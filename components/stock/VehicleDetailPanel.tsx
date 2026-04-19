@@ -161,14 +161,21 @@ export default function VehicleDetailPanel({ vehicle }: { vehicle: Vehicle }) {
 
       {/* Optional Extras */}
       {tab === 'extras' && (
-        <div className="py-4">
-          <p className="font-mono-custom text-[9px] tracking-[0.22em] uppercase text-text-3 mb-3">
-            Optional extras available on request
-          </p>
-          <p className="text-[13px] text-text-2 leading-[1.8]">
-            Contact us to discuss factory options, dealer-fitted accessories, and available
-            packages for this vehicle.
-          </p>
+        <div className="space-y-4">
+          {features.length === 0 ? (
+            <p className="font-mono-custom text-[10px] tracking-[0.18em] uppercase text-text-3">
+              No optional extras listed for this vehicle.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10">
+              {features.map((item, i) => (
+                <div key={i} className="flex items-center gap-3 py-[11px] border-b border-border">
+                  <CheckCircle />
+                  <span className="text-[13px] text-text-2">{item}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
