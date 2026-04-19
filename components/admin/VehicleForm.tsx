@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PhotoUploader from './PhotoUploader';
-import { BODY_TYPES, TRANSMISSIONS, FUEL_TYPES, STATUSES } from '@/lib/constants';
+import { BODY_TYPES, TRANSMISSIONS, FUEL_TYPES, STATUSES, STANDARD_FEATURES } from '@/lib/constants';
 import type { Vehicle, VehicleInsert } from '@/types/vehicle';
 
 interface VehicleFormProps {
@@ -53,6 +53,16 @@ export default function VehicleForm({ vehicle, mode }: VehicleFormProps) {
     setForm((f) => ({ ...f, [name]: !f[name as keyof typeof f] }));
   };
 
+  const allStandardFeatures = STANDARD_FEATURES.flatMap((g) => g.features);
+
+  const toggleStandardFeature = (feat: string) => {
+    setForm((f) => {
+      const current = f.features ?? [];
+      const has = current.includes(feat);
+      return { ...f, features: has ? current.filter((x) => x !== feat) : [...current, feat] };
+    });
+  };
+
   const addFeature = () => {
     const feat = featureInput.trim();
     if (feat && !form.features?.includes(feat)) {
@@ -64,6 +74,8 @@ export default function VehicleForm({ vehicle, mode }: VehicleFormProps) {
   const removeFeature = (feat: string) => {
     setForm((f) => ({ ...f, features: f.features?.filter((x) => x !== feat) }));
   };
+
+  const customFeaturesList = (form.features ?? []).filter((f) => !allStandardFeatures.includes(f));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -231,38 +243,76 @@ export default function VehicleForm({ vehicle, mode }: VehicleFormProps) {
 
       {/* Features */}
       <FormSection title="Features">
-        <div className="flex gap-2 mb-3">
-          <input
-            value={featureInput}
-            onChange={(e) => setFeatureInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addFeature(); } }}
-            placeholder="e.g. Sunroof"
-            className={`${inputCls} flex-1`}
-          />
-          <button
-            type="button"
-            onClick={addFeature}
-            className="px-5 bg-bg-3 border border-border text-text-2 font-body text-[10px] tracking-[0.15em] uppercase hover:border-gold-lo hover:text-gold transition-all"
-          >
-            Add
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {form.features?.map((f) => (
-            <span
-              key={f}
-              className="inline-flex items-center gap-2 font-mono-custom text-[9px] tracking-[0.15em] uppercase px-3 py-[6px] border border-border text-text-2"
-            >
-              {f}
-              <button
-                type="button"
-                onClick={() => removeFeature(f)}
-                className="text-text-3 hover:text-red-400 transition-colors text-[10px]"
-              >
-                ✕
-              </button>
-            </span>
+        <div className="space-y-5 mb-6">
+          {STANDARD_FEATURES.map(({ category, features }) => (
+            <div key={category}>
+              <div className="font-mono-custom text-[8px] tracking-[0.22em] uppercase text-text-3 mb-2">{category}</div>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-[10px]">
+                {features.map((feat) => {
+                  const checked = form.features?.includes(feat) ?? false;
+                  return (
+                    <label key={feat} className="flex items-center gap-[10px] cursor-pointer group">
+                      <span
+                        onClick={() => toggleStandardFeature(feat)}
+                        className={`w-4 h-4 border flex-shrink-0 flex items-center justify-center transition-colors ${
+                          checked ? 'bg-gold border-gold' : 'bg-bg-2 border-border group-hover:border-gold-lo'
+                        }`}
+                      >
+                        {checked && (
+                          <svg className="w-[9px] h-[9px] text-bg" viewBox="0 0 10 8" fill="none">
+                            <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </span>
+                      <span
+                        onClick={() => toggleStandardFeature(feat)}
+                        className="font-body text-[12px] text-text-2 select-none"
+                      >
+                        {feat}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
           ))}
+        </div>
+
+        <div className="border-t border-border pt-5">
+          <div className="font-mono-custom text-[8px] tracking-[0.22em] uppercase text-text-3 mb-3">Additional Features</div>
+          <div className="flex gap-2 mb-3">
+            <input
+              value={featureInput}
+              onChange={(e) => setFeatureInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addFeature(); } }}
+              placeholder="e.g. Custom exhaust"
+              className={`${inputCls} flex-1`}
+            />
+            <button
+              type="button"
+              onClick={addFeature}
+              className="px-5 bg-bg-3 border border-border text-text-2 font-body text-[10px] tracking-[0.15em] uppercase hover:border-gold-lo hover:text-gold transition-all"
+            >
+              Add
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {customFeaturesList.map((f) => (
+              <span
+                key={f}
+                className="inline-flex items-center gap-2 font-mono-custom text-[9px] tracking-[0.15em] uppercase px-3 py-[6px] border border-border text-text-2"
+              >
+                {f}
+                <button
+                  type="button"
+                  onClick={() => removeFeature(f)}
+                  className="text-text-3 hover:text-red-400 transition-colors text-[10px]"
+                >
+                  ✕
+                </button>
+              </span>
+            ))}
+          </div>
         </div>
       </FormSection>
 
