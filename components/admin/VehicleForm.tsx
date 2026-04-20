@@ -27,9 +27,17 @@ export default function VehicleForm({ vehicle, mode }: VehicleFormProps) {
     transmission: vehicle?.transmission ?? 'Automatic',
     body_type: vehicle?.body_type ?? undefined,
     engine: vehicle?.engine ?? '',
+    engine_capacity: vehicle?.engine_capacity ?? undefined,
+    cylinders: vehicle?.cylinders ?? '',
     fuel_type: vehicle?.fuel_type ?? 'Petrol',
     seats: vehicle?.seats ?? undefined,
+    doors: vehicle?.doors ?? undefined,
     description: vehicle?.description ?? '',
+    short_description: vehicle?.short_description ?? '',
+    stock_number: vehicle?.stock_number ?? '',
+    vin: vehicle?.vin ?? '',
+    reg_plate: vehicle?.reg_plate ?? '',
+    reg_expiry: vehicle?.reg_expiry ?? '',
     features: vehicle?.features ?? [],
     photos: vehicle?.photos ?? [],
     status: vehicle?.status ?? 'available',
@@ -209,6 +217,17 @@ export default function VehicleForm({ vehicle, mode }: VehicleFormProps) {
               className={inputCls}
             />
           </FormField>
+          <FormField label="Doors">
+            <input
+              name="doors"
+              type="number"
+              value={form.doors ?? ''}
+              onChange={handleChange}
+              min={1}
+              max={6}
+              className={inputCls}
+            />
+          </FormField>
           <FormField label="Transmission">
             <select name="transmission" value={form.transmission} onChange={handleChange} className={selectCls}>
               {TRANSMISSIONS.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -225,7 +244,7 @@ export default function VehicleForm({ vehicle, mode }: VehicleFormProps) {
               {FUEL_TYPES.map((f) => <option key={f} value={f}>{f}</option>)}
             </select>
           </FormField>
-          <FormField label="Engine" className="col-span-3">
+          <FormField label="Engine">
             <input
               name="engine"
               value={form.engine ?? ''}
@@ -234,11 +253,82 @@ export default function VehicleForm({ vehicle, mode }: VehicleFormProps) {
               className={inputCls}
             />
           </FormField>
+          <FormField label="Engine Capacity (cc)">
+            <input
+              name="engine_capacity"
+              type="number"
+              value={form.engine_capacity ?? ''}
+              onChange={handleChange}
+              min={0}
+              placeholder="e.g. 2800"
+              className={inputCls}
+            />
+          </FormField>
+          <FormField label="Cylinders">
+            <input
+              name="cylinders"
+              value={form.cylinders ?? ''}
+              onChange={handleChange}
+              placeholder="e.g. 4"
+              className={inputCls}
+            />
+          </FormField>
+        </div>
+      </FormSection>
+
+      {/* Vehicle Identity */}
+      <FormSection title="Vehicle Identity">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Stock Number">
+            <input
+              name="stock_number"
+              value={form.stock_number ?? ''}
+              onChange={handleChange}
+              placeholder="e.g. 333"
+              className={inputCls}
+            />
+          </FormField>
+          <FormField label="VIN">
+            <input
+              name="vin"
+              value={form.vin ?? ''}
+              onChange={handleChange}
+              placeholder="e.g. WBAFG..."
+              className={inputCls}
+            />
+          </FormField>
+          <FormField label="Rego Plate">
+            <input
+              name="reg_plate"
+              value={form.reg_plate ?? ''}
+              onChange={handleChange}
+              placeholder="e.g. ABC123"
+              className={inputCls}
+            />
+          </FormField>
+          <FormField label="Rego Expiry">
+            <input
+              name="reg_expiry"
+              type="date"
+              value={form.reg_expiry ?? ''}
+              onChange={handleChange}
+              className={inputCls}
+            />
+          </FormField>
         </div>
       </FormSection>
 
       {/* Description */}
       <FormSection title="Description">
+        <FormField label="Short Description" className="mb-3">
+          <input
+            name="short_description"
+            value={form.short_description ?? ''}
+            onChange={handleChange}
+            placeholder="e.g. One-owner, full service history, immaculate condition"
+            className={inputCls}
+          />
+        </FormField>
         <textarea
           name="description"
           value={form.description ?? ''}
