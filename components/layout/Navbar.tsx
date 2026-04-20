@@ -75,14 +75,8 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Right — phone + CTA */}
+        {/* Right — CTA */}
         <div className="hidden md:flex items-center gap-5">
-          <a
-            href={BUSINESS.phoneHref}
-            className="font-mono-custom text-[11px] text-text-2 tracking-[0.08em] hover:text-gold transition-colors"
-          >
-            {BUSINESS.phone}
-          </a>
           <Link
             href="/contact"
             className="font-body text-[10px] font-[500] tracking-[0.2em] uppercase px-6 py-[10px] text-gold transition-all duration-200 no-underline"
@@ -130,12 +124,6 @@ export default function Navbar() {
                 {label}
               </Link>
             ))}
-            <a
-              href={BUSINESS.phoneHref}
-              className="font-mono-custom text-[12px] text-text-2 tracking-[0.08em] hover:text-gold transition-colors pt-4"
-            >
-              {BUSINESS.phone}
-            </a>
           </div>
         </div>
       )}

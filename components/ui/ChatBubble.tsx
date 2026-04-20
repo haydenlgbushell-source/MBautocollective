@@ -66,8 +66,7 @@ export default function ChatBubble() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
-        className="w-14 h-14 rounded-full flex items-center justify-center text-white shadow-[0_8px_32px_rgba(37,211,102,0.35)] hover:scale-105 transition-all duration-200 hover:shadow-[0_12px_40px_rgba(37,211,102,0.45)]"
-        style={{ background: '#25d366' }}
+        className="w-14 h-14 bg-gold hover:bg-gold-hi rounded-full flex items-center justify-center text-white shadow-[0_8px_32px_rgba(184,150,62,0.35)] hover:scale-105 transition-all duration-200 hover:shadow-[0_12px_40px_rgba(184,150,62,0.45)]"
       >
         <WhatsAppIcon />
       </a>
