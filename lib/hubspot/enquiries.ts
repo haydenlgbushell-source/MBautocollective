@@ -77,12 +77,12 @@ export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
     const body = await contactRes.json().catch(() => null);
     contactErrDetail = JSON.stringify(body);
     if (contactRes.status === 409) {
-      contactId = body?.message?.match(/existing ID: (\d+)/)?.[1];
+      contactId = body?.message?.match(/existing ID: (\d+)/i)?.[1];
     }
   }
 
   if (!contactId) {
-    return { success: false, error: 'Failed to create HubSpot contact', status: contactRes.status, detail: contactErrDetail };
+    return { success: false, error: 'Failed to create HubSpot contact' };
   }
 
   // 3. Create deal
