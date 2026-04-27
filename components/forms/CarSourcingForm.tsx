@@ -59,7 +59,7 @@ export default function CarSourcingForm() {
           email: form.email,
           phone: form.phone,
           message,
-          source: 'car-sourcing',
+          source: 'sourcing',
         }),
       });
       if (!res.ok) throw new Error();
