@@ -1,36 +1,6 @@
 'use client';
 
-import { useEffect, useId } from 'react';
-
-declare global {
-  interface Window {
-    hbspt?: {
-      forms: {
-        create: (config: Record<string, unknown>) => void;
-      };
-    };
-  }
-}
-
-// Single script load shared across all form instances
-let scriptState: 'idle' | 'loading' | 'ready' = 'idle';
-const pendingCallbacks: (() => void)[] = [];
-
-function loadHubSpotScript(onReady: () => void) {
-  if (scriptState === 'ready') { onReady(); return; }
-  pendingCallbacks.push(onReady);
-  if (scriptState === 'loading') return;
-  scriptState = 'loading';
-  const s = document.createElement('script');
-  s.src = '//js-ap1.hsforms.net/forms/embed/v2.js';
-  s.charset = 'utf-8';
-  s.async = true;
-  s.onload = () => {
-    scriptState = 'ready';
-    pendingCallbacks.splice(0).forEach((fn) => fn());
-  };
-  document.head.appendChild(s);
-}
+import { useEffect, useId, useState } from 'react';
 
 export interface HubSpotSubmissionValues {
   email?: string;
@@ -47,45 +17,78 @@ interface HubSpotFormProps {
   onSubmitted?: (values: HubSpotSubmissionValues) => void;
 }
 
+// Singleton script loader
+let scriptState: 'idle' | 'loading' | 'ready' = 'idle';
+const queue: (() => void)[] = [];
+
+function loadScript(portalId: string, cb: () => void) {
+  if (scriptState === 'ready') { cb(); return; }
+  queue.push(cb);
+  if (scriptState === 'loading') return;
+  scriptState = 'loading';
+  const s = document.createElement('script');
+  s.src = `https://js-ap1.hsforms.net/forms/embed/${portalId}.js`;
+  s.defer = true;
+  s.onload = () => { scriptState = 'ready'; queue.splice(0).forEach(f => f()); };
+  document.head.appendChild(s);
+}
+
 export default function HubSpotForm({ formId, prefill, onSubmitted }: HubSpotFormProps) {
   const uid = useId().replace(/:/g, '');
-  const containerId = `hs-form-${uid}`;
   const portalId = process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID ?? '';
+  const [ready, setReady] = useState(false);
 
+  // Load the HubSpot embed script then mark ready
   useEffect(() => {
     if (!formId || !portalId) return;
+    loadScript(portalId, () => setReady(true));
+  }, [formId, portalId]);
 
-    loadHubSpotScript(() => {
-      window.hbspt?.forms.create({
-        region: 'ap1',
-        portalId,
-        formId,
-        target: `#${containerId}`,
-        cssRequired: '',
-        css: '',
-        onFormReady: (form: HTMLFormElement) => {
-          if (!prefill) return;
-          Object.entries(prefill).forEach(([name, value]) => {
-            if (!value) return;
-            const el = form.querySelector<HTMLInputElement | HTMLTextAreaElement>(
-              `[name="${name}"]`
-            );
-            if (el) {
-              el.value = value;
-              el.dispatchEvent(new Event('input', { bubbles: true }));
-              el.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-          });
-        },
-        onFormSubmitted: (
-          _$form: unknown,
-          data: { submissionValues?: HubSpotSubmissionValues }
-        ) => {
-          onSubmitted?.(data?.submissionValues ?? {});
-        },
+  // Pre-fill fields once the form renders into the DOM
+  useEffect(() => {
+    if (!ready || !prefill) return;
+    const timer = setTimeout(() => {
+      const container = document.getElementById(uid);
+      if (!container) return;
+      Object.entries(prefill).forEach(([name, value]) => {
+        if (!value) return;
+        const el = container.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[name="${name}"]`);
+        if (el) {
+          el.value = value;
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
       });
-    });
-  }, [formId, portalId, containerId, prefill, onSubmitted]);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [ready, prefill, uid]);
 
-  return <div id={containerId} className="hubspot-form" />;
+  // Listen for HubSpot's postMessage submission event
+  useEffect(() => {
+    if (!onSubmitted) return;
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === 'hsFormCallback' && e.data?.eventName === 'onFormSubmitted') {
+        const values: HubSpotSubmissionValues = {};
+        (e.data?.data?.submissionValues ?? []).forEach(
+          ({ name, value }: { name: string; value: string }) => { values[name] = value; }
+        );
+        onSubmitted(values);
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [onSubmitted]);
+
+  if (!formId || !portalId) return null;
+
+  return (
+    <div id={uid} className="hubspot-form">
+      <div
+        className="hs-form-frame"
+        data-region="ap1"
+        data-form-id={formId}
+        data-portal-id={portalId}
+      />
+    </div>
+  );
 }
