@@ -3,9 +3,10 @@ import { createHubSpotEnquiry } from '@/lib/hubspot/enquiries';
 import { createAdminClient } from '@/lib/supabase/server';
 
 const FORM_IDS: Record<string, string | undefined> = {
-  contact: process.env.HUBSPOT_CONTACT_FORM_ID,
-  enquiry: process.env.HUBSPOT_ENQUIRY_FORM_ID,
-  valuation: process.env.HUBSPOT_VALUATION_FORM_ID,
+  contact: process.env.NEXT_PUBLIC_HUBSPOT_CONTACT_FORM_ID,
+  enquiry: process.env.NEXT_PUBLIC_HUBSPOT_ENQUIRY_FORM_ID,
+  valuation: process.env.NEXT_PUBLIC_HUBSPOT_VALUATION_FORM_ID,
+  sourcing: process.env.HUBSPOT_SOURCING_FORM_ID,
 };
 
 export async function POST(request: NextRequest) {
