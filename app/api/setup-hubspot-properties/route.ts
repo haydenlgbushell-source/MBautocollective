@@ -1,16 +1,9 @@
 import { NextResponse } from 'next/server';
 
 const PROPERTIES = [
-  { name: 'vehicle_make',         label: 'Vehicle Make',        type: 'string', fieldType: 'text' },
-  { name: 'vehicle_model',        label: 'Vehicle Model',       type: 'string', fieldType: 'text' },
-  { name: 'vehicle_year',         label: 'Vehicle Year',        type: 'string', fieldType: 'text' },
-  { name: 'vehicle_kilometres',   label: 'Kilometres',          type: 'string', fieldType: 'text' },
-  { name: 'vehicle_colour',       label: 'Colour Preference',   type: 'string', fieldType: 'text' },
-  { name: 'vehicle_transmission', label: 'Transmission',        type: 'string', fieldType: 'text' },
-  { name: 'vehicle_budget',       label: 'Budget',              type: 'string', fieldType: 'text' },
-  { name: 'vehicle_year_from',    label: 'Year From',           type: 'string', fieldType: 'text' },
-  { name: 'vehicle_year_to',      label: 'Year To',             type: 'string', fieldType: 'text' },
-  { name: 'enquiry_notes',        label: 'Additional Notes',    type: 'string', fieldType: 'textarea' },
+  { name: 'vehicle_budget',    label: 'Budget',    type: 'string', fieldType: 'text' },
+  { name: 'vehicle_year_from', label: 'Year From', type: 'string', fieldType: 'text' },
+  { name: 'vehicle_year_to',   label: 'Year To',   type: 'string', fieldType: 'text' },
 ];
 
 export async function GET() {
