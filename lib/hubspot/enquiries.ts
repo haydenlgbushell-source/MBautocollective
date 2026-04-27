@@ -14,6 +14,18 @@ interface HubSpotEnquiry {
     price: number;
     slug?: string;
   };
+  details?: {
+    make?: string;
+    model?: string;
+    year?: string;
+    kilometres?: string;
+    colour?: string;
+    transmission?: string;
+    budget?: string;
+    yearFrom?: string;
+    yearTo?: string;
+    notes?: string;
+  };
   formId?: string;
   pageUri?: string;
 }
@@ -93,9 +105,13 @@ export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
   }
 
   // 3. Create deal in Car Sales pipeline with correct stage per source
-  const vehicleLabel = data.vehicle
-    ? `${data.vehicle.year} ${data.vehicle.make} ${data.vehicle.model}`
-    : 'Enquiry';
+  const v = data.vehicle;
+  const d = data.details;
+  const make = v?.make ?? d?.make;
+  const model = v?.model ?? d?.model;
+  const year = v?.year?.toString() ?? d?.year;
+
+  const vehicleLabel = make && model ? `${year ? year + ' ' : ''}${make} ${model}` : 'Enquiry';
 
   const dealRes = await fetch('https://api.hubapi.com/crm/v3/objects/deals', {
     method: 'POST',
@@ -105,8 +121,18 @@ export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
         dealname: `${vehicleLabel} — ${data.name}`,
         pipeline: CAR_SALES_PIPELINE,
         dealstage: DEAL_STAGE[data.source ?? ''] ?? DEAL_STAGE.contact,
-        amount: data.vehicle?.price?.toString(),
+        amount: v?.price?.toString(),
         description: data.message,
+        ...(make             && { vehicle_make:         make }),
+        ...(model            && { vehicle_model:        model }),
+        ...(year             && { vehicle_year:         year }),
+        ...(d?.kilometres    && { vehicle_kilometres:   d.kilometres }),
+        ...(d?.colour        && { vehicle_colour:       d.colour }),
+        ...(d?.transmission  && { vehicle_transmission: d.transmission }),
+        ...(d?.budget        && { vehicle_budget:       d.budget }),
+        ...(d?.yearFrom      && { vehicle_year_from:    d.yearFrom }),
+        ...(d?.yearTo        && { vehicle_year_to:      d.yearTo }),
+        ...(d?.notes         && { enquiry_notes:        d.notes }),
       },
     }),
   });

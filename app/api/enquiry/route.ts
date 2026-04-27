@@ -12,7 +12,7 @@ const FORM_IDS: Record<string, string | undefined> = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, message, vehicle, source = 'website' } = body;
+    const { name, email, phone, message, vehicle, details, source = 'website' } = body;
 
     if (!name || !email) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
         phone,
         message,
         vehicle,
+        details,
         source,
         formId,
         pageUri,

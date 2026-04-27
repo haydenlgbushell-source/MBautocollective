@@ -28,7 +28,13 @@ export default function ValuationForm() {
       const res = await fetch('/api/enquiry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, email: form.email, phone: form.phone, message, source: 'valuation' }),
+        body: JSON.stringify({
+          name: form.name, email: form.email, phone: form.phone, message, source: 'valuation',
+          details: {
+            make: form.make, model: form.model, year: form.year,
+            kilometres: form.kilometres, notes: form.notes,
+          },
+        }),
       });
       if (!res.ok) throw new Error();
       setSent(true);

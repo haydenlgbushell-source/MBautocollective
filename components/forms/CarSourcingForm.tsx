@@ -55,11 +55,11 @@ export default function CarSourcingForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          message,
-          source: 'sourcing',
+          name: form.name, email: form.email, phone: form.phone, message, source: 'sourcing',
+          details: {
+            make: form.make, model: form.model, yearFrom: form.yearFrom, yearTo: form.yearTo,
+            budget: form.budget, colour: form.colour, transmission: form.transmission, notes: form.notes,
+          },
         }),
       });
       if (!res.ok) throw new Error();
