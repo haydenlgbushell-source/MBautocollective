@@ -18,7 +18,14 @@ interface HubSpotEnquiry {
   pageUri?: string;
 }
 
-export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
+const CAR_SALES_PIPELINE = '1680745971';
+
+const DEAL_STAGE: Record<string, string> = {
+  enquiry:   '2823590348', // New Enquiry
+  valuation: '2824270290', // Car Valuation Request
+  sourcing:  '2823576019', // Car Request
+  contact:   '2823590348', // New Enquiry
+};
   const token = process.env.HUBSPOT_ACCESS_TOKEN;
   if (!token) throw new Error('Missing HUBSPOT_ACCESS_TOKEN');
 
@@ -96,7 +103,8 @@ export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
     body: JSON.stringify({
       properties: {
         dealname: `${vehicleLabel} — ${data.name}`,
-        dealstage: 'appointmentscheduled',
+        pipeline: CAR_SALES_PIPELINE,
+        dealstage: DEAL_STAGE[data.source ?? ''] ?? DEAL_STAGE.contact,
         amount: data.vehicle?.price?.toString(),
         description: data.message,
       },
