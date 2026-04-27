@@ -129,9 +129,6 @@ export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
         ...(d?.kilometres   && { odometer_km:       d.kilometres }),
         ...(d?.colour       && { vehicle_colour:    d.colour }),
         ...(d?.transmission && { transmission:      d.transmission }),
-        ...(d?.budget       && { vehicle_budget:    d.budget }),
-        ...(d?.yearFrom     && { vehicle_year_from: d.yearFrom }),
-        ...(d?.yearTo       && { vehicle_year_to:   d.yearTo }),
       },
     }),
   });
