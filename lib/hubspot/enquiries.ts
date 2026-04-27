@@ -69,15 +69,21 @@ export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
 
   let contactId: string | undefined;
 
+  let contactErrDetail = '';
   if (contactRes.ok) {
     const contactData = await contactRes.json();
     contactId = contactData.id;
-  } else if (contactRes.status === 409) {
-    const err = await contactRes.json();
-    contactId = err?.message?.match(/existing ID: (\d+)/)?.[1];
+  } else {
+    const body = await contactRes.json().catch(() => null);
+    contactErrDetail = JSON.stringify(body);
+    if (contactRes.status === 409) {
+      contactId = body?.message?.match(/existing ID: (\d+)/)?.[1];
+    }
   }
 
-  if (!contactId) return { success: false, error: 'Failed to create HubSpot contact' };
+  if (!contactId) {
+    return { success: false, error: 'Failed to create HubSpot contact', status: contactRes.status, detail: contactErrDetail };
+  }
 
   // 3. Create deal
   const vehicleLabel = data.vehicle
