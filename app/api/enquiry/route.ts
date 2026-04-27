@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Send to HubSpot (Forms API + CRM contact/deal creation)
     let hubspotResult = null;
+    let hubspotError = null;
     try {
       hubspotResult = await createHubSpotEnquiry({
         name,
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
       });
     } catch (err) {
       console.error('HubSpot error:', err);
-      // Don't fail the request if HubSpot is down — Supabase backup is sufficient
+      hubspotError = err instanceof Error ? err.message : String(err);
     }
 
     // 2. Save to Supabase as backup
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
       console.error('Supabase enquiry backup error:', err);
     }
 
-    return NextResponse.json({ success: true, hubspot: hubspotResult });
+    return NextResponse.json({ success: true, hubspot: hubspotResult, hubspotError });
   } catch (err) {
     console.error('Enquiry API error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
