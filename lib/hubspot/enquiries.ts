@@ -26,6 +26,8 @@ const DEAL_STAGE: Record<string, string> = {
   sourcing:  '2823576019', // Car Request
   contact:   '2823590348', // New Enquiry
 };
+
+export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
   const token = process.env.HUBSPOT_ACCESS_TOKEN;
   if (!token) throw new Error('Missing HUBSPOT_ACCESS_TOKEN');
 
@@ -60,7 +62,7 @@ const DEAL_STAGE: Record<string, string> = {
     }
   }
 
-  // 2. Create or find contact via CRM API (required for deal association)
+  // 2. Create or find contact via CRM API
   const contactRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
     method: 'POST',
     headers,
@@ -76,13 +78,11 @@ const DEAL_STAGE: Record<string, string> = {
 
   let contactId: string | undefined;
 
-  let contactErrDetail = '';
   if (contactRes.ok) {
     const contactData = await contactRes.json();
     contactId = contactData.id;
   } else {
     const body = await contactRes.json().catch(() => null);
-    contactErrDetail = JSON.stringify(body);
     if (contactRes.status === 409) {
       contactId = body?.message?.match(/existing ID: (\d+)/i)?.[1];
     }
@@ -92,7 +92,7 @@ const DEAL_STAGE: Record<string, string> = {
     return { success: false, error: 'Failed to create HubSpot contact' };
   }
 
-  // 3. Create deal
+  // 3. Create deal in Car Sales pipeline with correct stage per source
   const vehicleLabel = data.vehicle
     ? `${data.vehicle.year} ${data.vehicle.make} ${data.vehicle.model}`
     : 'Enquiry';
