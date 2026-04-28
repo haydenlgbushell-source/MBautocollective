@@ -56,47 +56,62 @@ function isLoginUrl(url: string): boolean {
   return u.includes('login') || u.includes('signin') || u.includes('sign-in');
 }
 
+/** Fill an input in a way that triggers React/Vue/Angular change detection. */
+async function fillInput(page: Page, selector: string, value: string): Promise<boolean> {
+  return page.evaluate((sel, val) => {
+    const el = document.querySelector(sel) as HTMLInputElement | null;
+    if (!el) return false;
+    el.focus();
+    // Use the native setter so React's synthetic event system picks up the change
+    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+    nativeSetter?.call(el, val);
+    el.dispatchEvent(new Event('input',  { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }, selector, value);
+}
+
 async function login(page: Page, email: string, password: string): Promise<void> {
   page.setDefaultNavigationTimeout(30000);
 
-  await page.goto('https://my.easycars.net.au/app/Login', { waitUntil: 'domcontentloaded', timeout: 20000 });
+  await page.goto('https://my.easycars.net.au/app/Login', { waitUntil: 'networkidle2', timeout: 30000 });
 
-  // Wait for any input to appear — allow up to 20s for JS-rendered forms
+  // Wait for the form to appear and allow the SPA to fully initialise
   await page.waitForSelector('input', { timeout: 20000 });
+  await new Promise((r) => setTimeout(r, 1500));
 
-  // Fill email — try common selectors in priority order
-  for (const sel of [
+  // Try to fill the email field using React-safe native setter
+  const emailSelectors = [
     'input[type="email"]',
     'input[name="email"]',
     'input[id="email"]',
     'input[name="username"]',
     'input[placeholder*="email" i]',
     'input[placeholder*="user" i]',
-    'input[type="text"]:first-of-type',
-  ]) {
-    const el = await page.$(sel);
-    if (el) {
-      await el.click({ clickCount: 3 });
-      await el.type(email, { delay: 40 });
-      break;
-    }
+    'input[type="text"]',
+  ];
+  let emailFilled = false;
+  for (const sel of emailSelectors) {
+    if (await fillInput(page, sel, email)) { emailFilled = true; break; }
   }
+  if (!emailFilled) throw new Error('Could not find the email/username field on the EasyCars login page.');
 
   // Fill password
-  const passEl = await page.$('input[type="password"]');
-  if (passEl) {
-    await passEl.click({ clickCount: 3 });
-    await passEl.type(password, { delay: 40 });
-  }
+  const passFilled = await fillInput(page, 'input[type="password"]', password);
+  if (!passFilled) throw new Error('Could not find the password field on the EasyCars login page.');
 
-  // Submit — start waitForNavigation BEFORE clicking to avoid the race condition
+  // Small delay so the SPA can validate the filled values before we submit
+  await new Promise((r) => setTimeout(r, 500));
+
+  // Submit — hook waitForNavigation BEFORE clicking to avoid the race
+  const navPromise = page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 25000 }).catch(() => {});
   let submitted = false;
-  const navPromise = page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(() => {});
   for (const sel of [
     'button[type="submit"]',
     'input[type="submit"]',
     'button.btn-primary',
     'button.login-btn',
+    'button',
   ]) {
     const el = await page.$(sel);
     if (el) {
@@ -105,30 +120,26 @@ async function login(page: Page, email: string, password: string): Promise<void>
       break;
     }
   }
-  if (!submitted) {
-    await page.keyboard.press('Enter');
-  }
+  if (!submitted) await page.keyboard.press('Enter');
   await navPromise;
 
-  // Give SPA extra time to settle after login redirect
-  await new Promise((r) => setTimeout(r, 2000));
+  // Give SPA extra time to settle and set auth state
+  await new Promise((r) => setTimeout(r, 2500));
 
-  // Check URL first
+  // URL check
   if (isLoginUrl(page.url())) {
     const diagShot = await jpeg(page);
     throw Object.assign(
-      new Error('Login failed — check EASYCARS_EMAIL and EASYCARS_PASSWORD env vars, or the EasyCars login page selectors may have changed.'),
+      new Error('Login failed — check EASYCARS_EMAIL / EASYCARS_PASSWORD in your environment variables.'),
       { diagShot }
     );
   }
 
-  // Also check for a password input still on the page — catches SPAs that
-  // show auth errors without changing the URL path
-  const stillHasPasswordField = await page.$('input[type="password"]');
-  if (stillHasPasswordField) {
+  // Secondary check: password field still visible means login form is still showing
+  if (await page.$('input[type="password"]')) {
     const diagShot = await jpeg(page);
     throw Object.assign(
-      new Error('Login failed — credentials were entered but EasyCars is still showing the login form. Check EASYCARS_EMAIL / EASYCARS_PASSWORD.'),
+      new Error('Login failed — EasyCars is still showing the login form after credentials were submitted. Verify your credentials.'),
       { diagShot }
     );
   }
@@ -145,8 +156,10 @@ async function findVehicleByRego(page: Page, rego: string): Promise<void> {
 
   // Guard: if we were redirected to login the session wasn't established
   if (isLoginUrl(page.url())) {
-    throw new Error(
-      'Session not established — redirected to login page when accessing vehicles. Check EasyCars credentials.'
+    const diagShot = await jpeg(page);
+    throw Object.assign(
+      new Error('Session not established — browser was redirected to login when accessing vehicles. Verify EASYCARS_EMAIL / EASYCARS_PASSWORD are correct.'),
+      { diagShot }
     );
   }
 
