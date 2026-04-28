@@ -81,3 +81,21 @@ create policy "Anyone insert enquiry" on enquiries for insert with check (true);
 -- Create a bucket called `vehicle-photos` with public access ON
 -- Dashboard → Storage → New bucket → vehicle-photos → Public: ON
 -- ─────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────
+-- APP SETTINGS (key/value store for internal config)
+-- Used to persist EasyCars session cookies between serverless runs
+-- ─────────────────────────────────────────────────────────────
+create table if not exists app_settings (
+  key        text primary key,
+  value      text,
+  updated_at timestamptz default now()
+);
+
+alter table app_settings enable row level security;
+
+-- Only service-role (server-side) code can read/write this table
+create policy "Service role only"
+  on app_settings for all
+  using (false)
+  with check (false);
