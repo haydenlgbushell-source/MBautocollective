@@ -102,51 +102,46 @@ async function login(page: Page, email: string, password: string): Promise<strin
 
   await new Promise((r) => setTimeout(r, 400));
 
-  // Submit — hook waitForNavigation BEFORE clicking to avoid the race
-  const navPromise = page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 25000 }).catch(() => {});
+  // Submit — try explicit button first, fall back to Enter
   let submitted = false;
-  for (const sel of ['button[type="submit"]', 'input[type="submit"]', 'button.btn-primary', 'button.login-btn']) {
+  for (const sel of ['button[type="submit"]', 'input[type="submit"]', 'button.btn-primary', 'button.login-btn', 'button']) {
     const el = await page.$(sel);
     if (el) { await el.click(); submitted = true; break; }
   }
   if (!submitted) await page.keyboard.press('Enter');
-  await navPromise;
 
-  // Let the SPA settle and establish its auth state
-  await new Promise((r) => setTimeout(r, 2500));
+  // Wait for the password field to DISAPPEAR — this is the definitive signal
+  // that we have left the login page, regardless of URL or navigation events.
+  await page.waitForFunction(
+    () => !document.querySelector('input[type="password"]'),
+    { timeout: 20000 }
+  ).catch(() => {});
 
-  if (isLoginUrl(page.url())) {
-    const diagShot = await jpeg(page);
-    throw Object.assign(
-      new Error('Login failed — the browser is still on the login page. Verify EASYCARS_EMAIL / EASYCARS_PASSWORD.'),
-      { diagShot }
-    );
-  }
+  await new Promise((r) => setTimeout(r, 1000));
+
+  // If a password field is still present, login genuinely failed
   if (await page.$('input[type="password"]')) {
     const diagShot = await jpeg(page);
     throw Object.assign(
-      new Error('Login failed — the login form is still visible after credentials were submitted. Verify EASYCARS_EMAIL / EASYCARS_PASSWORD.'),
+      new Error('Login failed — EasyCars is still showing the login form. Verify EASYCARS_EMAIL / EASYCARS_PASSWORD are correct.'),
       { diagShot }
     );
   }
 
   // EasyCars shows an MFA prompt after login — click "Continue without enabling MFA" to bypass it
-  const skippedMfa = await page.evaluate(() => {
+  await page.evaluate(() => {
     const all = Array.from(document.querySelectorAll('a, button'));
     const skip = all.find((el) => {
       const t = (el as HTMLElement).innerText?.toLowerCase() ?? '';
       return t.includes('continue without') || t.includes('skip') || t.includes('remind me later');
     });
-    if (skip) { (skip as HTMLElement).click(); return true; }
-    return false;
+    if (skip) (skip as HTMLElement).click();
   });
 
-  if (skippedMfa) {
-    await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
-    await new Promise((r) => setTimeout(r, 1500));
-  }
+  // Give the app time to navigate past the MFA screen
+  await new Promise((r) => setTimeout(r, 3000));
 
-  // Capture the state right after login (and MFA dismissal) — travels with any downstream error
+  // Capture the state right after login + MFA dismissal — travels with any downstream error
   const postLoginShot = await jpeg(page);
   return postLoginShot;
 }
