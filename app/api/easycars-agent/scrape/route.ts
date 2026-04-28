@@ -84,15 +84,14 @@ async function login(page: Page, email: string, password: string): Promise<void>
     await passEl.type(password, { delay: 40 });
   }
 
-  // Submit
+  // Submit — start waitForNavigation BEFORE clicking to avoid the race condition
   let submitted = false;
+  const navPromise = page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(() => {});
   for (const sel of [
     'button[type="submit"]',
     'input[type="submit"]',
     'button.btn-primary',
     'button.login-btn',
-    'button:has-text("Login")',
-    'button:has-text("Sign in")',
   ]) {
     const el = await page.$(sel);
     if (el) {
@@ -104,11 +103,10 @@ async function login(page: Page, email: string, password: string): Promise<void>
   if (!submitted) {
     await page.keyboard.press('Enter');
   }
+  await navPromise;
 
-  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(() => {});
-
-  // Confirm we're past the login page
-  const url = page.url();
+  // Confirm we're past the login page — case-insensitive check
+  const url = page.url().toLowerCase();
   if (url.includes('login') || url.includes('signin') || url.includes('sign-in')) {
     throw new Error(
       'Login failed — check EASYCARS_EMAIL and EASYCARS_PASSWORD, or the EasyCars login page selectors may have changed.'
