@@ -8,10 +8,8 @@ async function launchBrowser(): Promise<Browser> {
   if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
     const chromium = (await import('@sparticuz/chromium')).default;
     const puppeteer = (await import('puppeteer-core')).default;
-    chromium.setHeadlessMode = true;
-    chromium.setGraphicsMode = false;
     return puppeteer.launch({
-      args: chromium.args,
+      args: [...chromium.args, '--disable-gpu', '--no-sandbox'],
       defaultViewport: { width: 1440, height: 900 },
       executablePath: await chromium.executablePath(),
       headless: true,
