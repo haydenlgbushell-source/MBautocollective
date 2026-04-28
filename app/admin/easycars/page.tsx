@@ -374,6 +374,14 @@ export default function EasyCarsAgentPage() {
   const send = async (override?: string) => {
     const text = (override || input).trim();
     if (!text || loading || scraping) return;
+
+    // Auto-detect rego plates typed into chat and route to the scraper
+    if (/^[A-Z0-9]{4,8}$/i.test(text) && !override) {
+      setInput('');
+      await searchRego(text.toUpperCase());
+      return;
+    }
+
     setInput('');
     setLoading(true);
 
@@ -632,7 +640,7 @@ export default function EasyCarsAgentPage() {
                 t.style.height = 'auto';
                 t.style.height = Math.min(t.scrollHeight, 120) + 'px';
               }}
-              placeholder="Or type vehicle details / a question…"
+              placeholder="Type a rego plate to auto-search, or enter vehicle details / a question…"
               disabled={loading || scraping}
               style={{
                 flex: 1, background: 'transparent', border: 'none', color: '#f5f2ed',
