@@ -56,31 +56,30 @@ function isLoginUrl(url: string): boolean {
   return u.includes('login') || u.includes('signin') || u.includes('sign-in');
 }
 
-/** Fill an input in a way that triggers React/Vue/Angular change detection. */
-async function fillInput(page: Page, selector: string, value: string): Promise<boolean> {
-  return page.evaluate((sel, val) => {
-    const el = document.querySelector(sel) as HTMLInputElement | null;
-    if (!el) return false;
-    el.focus();
-    // Use the native setter so React's synthetic event system picks up the change
-    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
-    nativeSetter?.call(el, val);
-    el.dispatchEvent(new Event('input',  { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-    return true;
-  }, selector, value);
+/** Type into an input using real keyboard events (works with React, Vue, Angular). */
+async function typeIntoField(page: Page, selector: string, value: string): Promise<boolean> {
+  const el = await page.$(selector);
+  if (!el) return false;
+  await el.click({ clickCount: 3 }); // focus + select-all
+  await el.type(value, { delay: 60 }); // character-by-character keyboard events
+  return true;
 }
 
-async function login(page: Page, email: string, password: string): Promise<void> {
+/**
+ * Log in and return a base64 JPEG taken immediately after the login attempt.
+ * This screenshot travels with the error if a later step fails, giving a clear
+ * picture of what the browser state was post-login.
+ */
+async function login(page: Page, email: string, password: string): Promise<string> {
   page.setDefaultNavigationTimeout(30000);
 
   await page.goto('https://my.easycars.net.au/app/Login', { waitUntil: 'networkidle2', timeout: 30000 });
 
-  // Wait for the form to appear and allow the SPA to fully initialise
+  // Wait for the form and let the SPA fully initialise
   await page.waitForSelector('input', { timeout: 20000 });
   await new Promise((r) => setTimeout(r, 1500));
 
-  // Try to fill the email field using React-safe native setter
+  // Fill email field
   const emailSelectors = [
     'input[type="email"]',
     'input[name="email"]',
@@ -92,60 +91,50 @@ async function login(page: Page, email: string, password: string): Promise<void>
   ];
   let emailFilled = false;
   for (const sel of emailSelectors) {
-    if (await fillInput(page, sel, email)) { emailFilled = true; break; }
+    if (await typeIntoField(page, sel, email)) { emailFilled = true; break; }
   }
   if (!emailFilled) throw new Error('Could not find the email/username field on the EasyCars login page.');
 
   // Fill password
-  const passFilled = await fillInput(page, 'input[type="password"]', password);
-  if (!passFilled) throw new Error('Could not find the password field on the EasyCars login page.');
+  if (!await typeIntoField(page, 'input[type="password"]', password)) {
+    throw new Error('Could not find the password field on the EasyCars login page.');
+  }
 
-  // Small delay so the SPA can validate the filled values before we submit
-  await new Promise((r) => setTimeout(r, 500));
+  await new Promise((r) => setTimeout(r, 400));
 
   // Submit — hook waitForNavigation BEFORE clicking to avoid the race
   const navPromise = page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 25000 }).catch(() => {});
   let submitted = false;
-  for (const sel of [
-    'button[type="submit"]',
-    'input[type="submit"]',
-    'button.btn-primary',
-    'button.login-btn',
-    'button',
-  ]) {
+  for (const sel of ['button[type="submit"]', 'input[type="submit"]', 'button.btn-primary', 'button.login-btn']) {
     const el = await page.$(sel);
-    if (el) {
-      await el.click();
-      submitted = true;
-      break;
-    }
+    if (el) { await el.click(); submitted = true; break; }
   }
   if (!submitted) await page.keyboard.press('Enter');
   await navPromise;
 
-  // Give SPA extra time to settle and set auth state
+  // Let the SPA settle and establish its auth state
   await new Promise((r) => setTimeout(r, 2500));
 
-  // URL check
+  // Capture the state right after login — this travels with any downstream error
+  const postLoginShot = await jpeg(page);
+
   if (isLoginUrl(page.url())) {
-    const diagShot = await jpeg(page);
     throw Object.assign(
-      new Error('Login failed — check EASYCARS_EMAIL / EASYCARS_PASSWORD in your environment variables.'),
-      { diagShot }
+      new Error('Login failed — the browser is still on the login page. Verify EASYCARS_EMAIL / EASYCARS_PASSWORD.'),
+      { diagShot: postLoginShot }
+    );
+  }
+  if (await page.$('input[type="password"]')) {
+    throw Object.assign(
+      new Error('Login failed — the login form is still visible after credentials were submitted. Verify EASYCARS_EMAIL / EASYCARS_PASSWORD.'),
+      { diagShot: postLoginShot }
     );
   }
 
-  // Secondary check: password field still visible means login form is still showing
-  if (await page.$('input[type="password"]')) {
-    const diagShot = await jpeg(page);
-    throw Object.assign(
-      new Error('Login failed — EasyCars is still showing the login form after credentials were submitted. Verify your credentials.'),
-      { diagShot }
-    );
-  }
+  return postLoginShot;
 }
 
-async function findVehicleByRego(page: Page, rego: string): Promise<void> {
+async function findVehicleByRego(page: Page, rego: string, postLoginShot: string): Promise<void> {
   // EasyCars is a hash-based SPA — vehicle detail URL is /app/Vehicles/Manage/#<id>
   // waitForNavigation won't fire on hash changes, so we poll for DOM/hash changes instead.
   const base = 'https://my.easycars.net.au/app/Vehicles/Manage';
@@ -154,12 +143,12 @@ async function findVehicleByRego(page: Page, rego: string): Promise<void> {
   // Wait for SPA to fully initialise
   await new Promise((r) => setTimeout(r, 3000));
 
-  // Guard: if we were redirected to login the session wasn't established
+  // Guard: if we were redirected to login the session wasn't established.
+  // Use postLoginShot so the user sees the browser state right after login (not after redirect).
   if (isLoginUrl(page.url())) {
-    const diagShot = await jpeg(page);
     throw Object.assign(
-      new Error('Session not established — browser was redirected to login when accessing vehicles. Verify EASYCARS_EMAIL / EASYCARS_PASSWORD are correct.'),
-      { diagShot }
+      new Error('Session not established — browser was redirected to login when accessing vehicles. The screenshot shows what the browser looked like right after the login attempt.'),
+      { diagShot: postLoginShot }
     );
   }
 
@@ -238,8 +227,8 @@ export async function POST(request: NextRequest) {
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     );
 
-    await login(page, email, password);
-    await findVehicleByRego(page, rego);
+    const postLoginShot = await login(page, email, password);
+    await findVehicleByRego(page, rego, postLoginShot);
 
     const screenshots = await scrollAndCapture(page);
     const finalUrl = page.url();
