@@ -6,12 +6,15 @@ export const maxDuration = 60;
 
 async function launchBrowser(): Promise<Browser> {
   if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-    const chromium = (await import('@sparticuz/chromium')).default;
+    // chromium-min downloads the binary at runtime — avoids bundling issues on Vercel
+    const chromium = (await import('@sparticuz/chromium-min')).default;
     const puppeteer = (await import('puppeteer-core')).default;
     return puppeteer.launch({
       args: [...chromium.args, '--disable-gpu', '--no-sandbox'],
       defaultViewport: { width: 1440, height: 900 },
-      executablePath: await chromium.executablePath(),
+      executablePath: await chromium.executablePath(
+        'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar'
+      ),
       headless: true,
     });
   } else {
