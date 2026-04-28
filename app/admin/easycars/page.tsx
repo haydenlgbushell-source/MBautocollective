@@ -453,6 +453,10 @@ export default function EasyCarsAgentPage() {
         body: JSON.stringify({ messages: convRef.current }),
       });
       const data  = await res.json();
+      if (!res.ok) {
+        const errMsg = data.error?.message || data.error || 'Claude API error';
+        throw new Error(String(errMsg));
+      }
       const reply: string = data.content?.[0]?.text || 'Something went wrong — please try again.';
 
       const assistantMsg: ApiMessage = { role: 'assistant', content: reply };
