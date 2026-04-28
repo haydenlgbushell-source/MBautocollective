@@ -117,77 +117,60 @@ async function login(page: Page, email: string, password: string): Promise<void>
 }
 
 async function findVehicleByRego(page: Page, rego: string): Promise<void> {
-  const encoded = encodeURIComponent(rego);
+  // EasyCars is a hash-based SPA — vehicle detail URL is /app/Vehicles/Manage/#<id>
+  // waitForNavigation won't fire on hash changes, so we poll for DOM/hash changes instead.
   const base = 'https://my.easycars.net.au/app/Vehicles/Manage';
 
-  // Attempt 1: URL-based search using known base path
-  const searchUrls = [
-    `${base}?search=${encoded}`,
-    `${base}?rego=${encoded}`,
-    `${base}?registration=${encoded}`,
-    `${base}?q=${encoded}`,
-    `${base}?filter=${encoded}`,
+  await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 20000 });
+  // Wait for SPA to fully initialise
+  await new Promise((r) => setTimeout(r, 3000));
+
+  // Find and use the search input
+  const searchSelectors = [
+    'input[type="search"]',
+    'input[placeholder*="search" i]',
+    'input[placeholder*="rego" i]',
+    'input[placeholder*="registration" i]',
+    'input[placeholder*="filter" i]',
+    'input[placeholder*="vehicle" i]',
+    'input[name="search"]',
+    'input[name="q"]',
+    'input[type="text"]',
   ];
 
-  let foundViaUrl = false;
-  for (const url of searchUrls) {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {});
-    await new Promise((r) => setTimeout(r, 1500)); // allow JS to render
-
-    const found = await page.evaluate((r: string) => {
-      return document.body.innerText.toUpperCase().includes(r.toUpperCase());
-    }, rego);
-
-    if (found) {
-      foundViaUrl = true;
+  for (const sel of searchSelectors) {
+    const el = await page.$(sel);
+    if (el) {
+      await el.click({ clickCount: 3 });
+      await el.type(rego, { delay: 60 });
+      // Give the SPA time to filter results
+      await new Promise((r) => setTimeout(r, 2500));
       break;
     }
   }
 
-  // Attempt 2: Navigate to manage page and use on-page search input
-  if (!foundViaUrl) {
-    await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {});
-    await new Promise((r) => setTimeout(r, 1500));
-
-    for (const sel of [
-      'input[type="search"]',
-      'input[placeholder*="search" i]',
-      'input[placeholder*="rego" i]',
-      'input[placeholder*="registration" i]',
-      'input[placeholder*="filter" i]',
-      'input[name="search"]',
-      'input[name="q"]',
-      'input[type="text"]',
-    ]) {
-      const el = await page.$(sel);
-      if (el) {
-        await el.click({ clickCount: 3 });
-        await el.type(rego, { delay: 60 });
-        await page.keyboard.press('Enter');
-        await new Promise((r) => setTimeout(r, 2000));
-        break;
+  // Click the first result that contains the rego text
+  const clicked = await page.evaluate((r: string) => {
+    const candidates = Array.from(
+      document.querySelectorAll('a, tr, td, [class*="row"], [class*="item"], [class*="vehicle"], [class*="card"]')
+    );
+    for (const el of candidates) {
+      if ((el as HTMLElement).innerText?.toUpperCase().includes(r.toUpperCase())) {
+        (el as HTMLElement).click();
+        return true;
       }
     }
+    return false;
+  }, rego);
+
+  if (clicked) {
+    // Wait for hash to change (SPA navigation) then allow detail view to render
+    await page.waitForFunction(
+      () => window.location.hash.length > 1,
+      { timeout: 8000 }
+    ).catch(() => {});
+    await new Promise((r) => setTimeout(r, 2500));
   }
-
-  // Click into the vehicle detail if we're on a results list
-  await page
-    .evaluate((r: string) => {
-      // Try to find a clickable element containing the rego
-      const candidates = Array.from(
-        document.querySelectorAll('a, tr[onclick], .vehicle-item, .stock-row, [data-href]')
-      );
-      for (const el of candidates) {
-        if ((el as HTMLElement).innerText?.toUpperCase().includes(r.toUpperCase())) {
-          (el as HTMLElement).click();
-          return true;
-        }
-      }
-      return false;
-    }, rego)
-    .catch(() => false);
-
-  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 8000 }).catch(() => {});
 }
 
 export async function POST(request: NextRequest) {
