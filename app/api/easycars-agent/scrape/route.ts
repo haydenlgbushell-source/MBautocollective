@@ -54,19 +54,7 @@ async function scrollAndCapture(page: Page): Promise<string[]> {
 async function login(page: Page, email: string, password: string): Promise<void> {
   page.setDefaultNavigationTimeout(30000);
 
-  // Try login-specific URLs first, fall back to root
-  const loginUrls = [
-    'https://my.easycars.net.au/login',
-    'https://my.easycars.net.au/signin',
-    'https://my.easycars.net.au/auth/login',
-    'https://my.easycars.net.au',
-  ];
-
-  for (const url of loginUrls) {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
-    const hasInput = await page.$('input').catch(() => null);
-    if (hasInput) break;
-  }
+  await page.goto('https://my.easycars.net.au/app/Login', { waitUntil: 'domcontentloaded', timeout: 20000 });
 
   // Wait for any input to appear — allow up to 20s for JS-rendered forms
   await page.waitForSelector('input', { timeout: 20000 });
