@@ -73,17 +73,24 @@ async function typeIntoField(page: Page, selector: string, value: string): Promi
 async function login(page: Page, email: string, password: string): Promise<string> {
   page.setDefaultNavigationTimeout(30000);
 
+  // Trim to catch copy-paste whitespace in env vars
+  const cleanEmail    = email.trim();
+  const cleanPassword = password.trim();
+
   await page.goto('https://my.easycars.net.au/app/Login', { waitUntil: 'networkidle2', timeout: 30000 });
 
-  // Wait for the form and let the SPA fully initialise
+  // Wait for form to appear, then let the SPA fully initialise
   await page.waitForSelector('input', { timeout: 20000 });
   await new Promise((r) => setTimeout(r, 1500));
 
-  // Fill email field
+  // Fill email — include PascalCase variants (common in .NET/ASP.NET MVC apps)
   const emailSelectors = [
     'input[type="email"]',
+    'input[name="Email"]',
     'input[name="email"]',
+    'input[id="Email"]',
     'input[id="email"]',
+    'input[name="UserName"]',
     'input[name="username"]',
     'input[placeholder*="email" i]',
     'input[placeholder*="user" i]',
@@ -91,27 +98,38 @@ async function login(page: Page, email: string, password: string): Promise<strin
   ];
   let emailFilled = false;
   for (const sel of emailSelectors) {
-    if (await typeIntoField(page, sel, email)) { emailFilled = true; break; }
+    if (await typeIntoField(page, sel, cleanEmail)) { emailFilled = true; break; }
   }
   if (!emailFilled) throw new Error('Could not find the email/username field on the EasyCars login page.');
 
-  // Fill password
-  if (!await typeIntoField(page, 'input[type="password"]', password)) {
-    throw new Error('Could not find the password field on the EasyCars login page.');
-  }
+  // Fill password (also PascalCase variant)
+  const passFilled = await typeIntoField(page, 'input[type="password"]', cleanPassword)
+    || await typeIntoField(page, 'input[name="Password"]', cleanPassword);
+  if (!passFilled) throw new Error('Could not find the password field on the EasyCars login page.');
 
-  await new Promise((r) => setTimeout(r, 400));
+  await new Promise((r) => setTimeout(r, 500));
 
-  // Submit — try explicit button first, fall back to Enter
+  // Capture the pre-submit state — shows whether fields contain values
+  // This screenshot is attached to login-failure errors for diagnosis
+  const preSubmitShot = await jpeg(page);
+
+  // Submit — try type-based selectors first, then find by "login" text, then Enter
   let submitted = false;
-  for (const sel of ['button[type="submit"]', 'input[type="submit"]', 'button.btn-primary', 'button.login-btn', 'button']) {
+  for (const sel of ['button[type="submit"]', 'input[type="submit"]', 'button.btn-primary', 'button.login-btn']) {
     const el = await page.$(sel);
     if (el) { await el.click(); submitted = true; break; }
   }
+  if (!submitted) {
+    submitted = await page.evaluate(() => {
+      const all = Array.from(document.querySelectorAll('button, input[type="button"]'));
+      const btn = all.find((el) => /login|sign\s*in/i.test((el as HTMLElement).innerText || (el as HTMLInputElement).value || ''));
+      if (btn) { (btn as HTMLElement).click(); return true; }
+      return false;
+    });
+  }
   if (!submitted) await page.keyboard.press('Enter');
 
-  // Wait for the password field to DISAPPEAR — this is the definitive signal
-  // that we have left the login page, regardless of URL or navigation events.
+  // Wait for password field to disappear — definitive signal we left the login form
   await page.waitForFunction(
     () => !document.querySelector('input[type="password"]'),
     { timeout: 20000 }
@@ -119,16 +137,19 @@ async function login(page: Page, email: string, password: string): Promise<strin
 
   await new Promise((r) => setTimeout(r, 1000));
 
-  // If a password field is still present, login genuinely failed
+  // Password field still present = login genuinely failed
+  // Return the PRE-submit screenshot so it's clear whether the fields were filled
   if (await page.$('input[type="password"]')) {
-    const diagShot = await jpeg(page);
     throw Object.assign(
-      new Error('Login failed — EasyCars is still showing the login form. Verify EASYCARS_EMAIL / EASYCARS_PASSWORD are correct.'),
-      { diagShot }
+      new Error(
+        'Login failed — EasyCars is still showing the login form after submission. ' +
+        'The screenshot shows the form state BEFORE clicking login — check if the fields contain your credentials.'
+      ),
+      { diagShot: preSubmitShot }
     );
   }
 
-  // EasyCars shows an MFA prompt after login — click "Continue without enabling MFA" to bypass it
+  // EasyCars shows an MFA prompt after login — click "Continue without enabling MFA"
   await page.evaluate(() => {
     const all = Array.from(document.querySelectorAll('a, button'));
     const skip = all.find((el) => {
@@ -138,10 +159,8 @@ async function login(page: Page, email: string, password: string): Promise<strin
     if (skip) (skip as HTMLElement).click();
   });
 
-  // Give the app time to navigate past the MFA screen
   await new Promise((r) => setTimeout(r, 3000));
 
-  // Capture the state right after login + MFA dismissal — travels with any downstream error
   const postLoginShot = await jpeg(page);
   return postLoginShot;
 }
