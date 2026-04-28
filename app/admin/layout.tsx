@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: '◈' },
   { href: '/admin/inventory', label: 'Inventory', icon: '◉' },
   { href: '/admin/inventory/new', label: 'Add Vehicle', icon: '+' },
+  { href: '/admin/easycars', label: 'EasyCars Import', icon: '⬆' },
   { href: '/admin/leads', label: 'Leads / CRM', icon: '◎' },
 ];
 
