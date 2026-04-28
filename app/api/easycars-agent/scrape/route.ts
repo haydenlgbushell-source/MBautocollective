@@ -118,22 +118,22 @@ async function login(page: Page, email: string, password: string): Promise<void>
 
 async function findVehicleByRego(page: Page, rego: string): Promise<void> {
   const encoded = encodeURIComponent(rego);
+  const base = 'https://my.easycars.net.au/app/Vehicles/Manage';
 
-  // Attempt 1: URL-based search (most DMS systems support this)
+  // Attempt 1: URL-based search using known base path
   const searchUrls = [
-    `https://my.easycars.net.au/vehicles?search=${encoded}`,
-    `https://my.easycars.net.au/stock?search=${encoded}`,
-    `https://my.easycars.net.au/inventory?search=${encoded}`,
-    `https://my.easycars.net.au/vehicles?rego=${encoded}`,
-    `https://my.easycars.net.au/vehicles?registration=${encoded}`,
-    `https://my.easycars.net.au/vehicles?q=${encoded}`,
+    `${base}?search=${encoded}`,
+    `${base}?rego=${encoded}`,
+    `${base}?registration=${encoded}`,
+    `${base}?q=${encoded}`,
+    `${base}?filter=${encoded}`,
   ];
 
   let foundViaUrl = false;
   for (const url of searchUrls) {
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 12000 }).catch(() => {});
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {});
+    await new Promise((r) => setTimeout(r, 1500)); // allow JS to render
 
-    // Check if we have results (any link/row mentioning the rego)
     const found = await page.evaluate((r: string) => {
       return document.body.innerText.toUpperCase().includes(r.toUpperCase());
     }, rego);
@@ -144,29 +144,27 @@ async function findVehicleByRego(page: Page, rego: string): Promise<void> {
     }
   }
 
-  // Attempt 2: Use the on-page search input if URL approach didn't show results
+  // Attempt 2: Navigate to manage page and use on-page search input
   if (!foundViaUrl) {
-    await page.goto('https://my.easycars.net.au/vehicles', {
-      waitUntil: 'networkidle2',
-      timeout: 12000,
-    }).catch(() => {
-      page.goto('https://my.easycars.net.au', { waitUntil: 'networkidle2', timeout: 12000 });
-    });
+    await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {});
+    await new Promise((r) => setTimeout(r, 1500));
 
     for (const sel of [
       'input[type="search"]',
       'input[placeholder*="search" i]',
       'input[placeholder*="rego" i]',
       'input[placeholder*="registration" i]',
+      'input[placeholder*="filter" i]',
       'input[name="search"]',
       'input[name="q"]',
+      'input[type="text"]',
     ]) {
       const el = await page.$(sel);
       if (el) {
         await el.click({ clickCount: 3 });
         await el.type(rego, { delay: 60 });
         await page.keyboard.press('Enter');
-        await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 8000 }).catch(() => {});
+        await new Promise((r) => setTimeout(r, 2000));
         break;
       }
     }
