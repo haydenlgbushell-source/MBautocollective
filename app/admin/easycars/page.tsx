@@ -401,7 +401,18 @@ export default function EasyCarsAgentPage() {
       const data = await res.json();
 
       if (!res.ok || data.error) {
-        throw new Error(data.error || 'Scrape failed');
+        const errMsg = data.error || 'Scrape failed';
+        setScrapeError(errMsg);
+        // Show diagnostic screenshot alongside the error if available
+        setMessages((p) => [...p, {
+          role: 'assistant',
+          content: data.diagShot
+            ? `Login failed — here is what the browser captured. ${errMsg}`
+            : `Could not fetch EasyCars listing: ${errMsg}\n\nYou can still enter vehicle details manually below.`,
+          thumb: data.diagShot,
+        }]);
+        setScraping(false);
+        return;
       }
 
       const screenshots: string[] = data.screenshots ?? [];

@@ -51,6 +51,11 @@ async function scrollAndCapture(page: Page): Promise<string[]> {
   return shots;
 }
 
+function isLoginUrl(url: string): boolean {
+  const u = url.toLowerCase();
+  return u.includes('login') || u.includes('signin') || u.includes('sign-in');
+}
+
 async function login(page: Page, email: string, password: string): Promise<void> {
   page.setDefaultNavigationTimeout(30000);
 
@@ -105,11 +110,26 @@ async function login(page: Page, email: string, password: string): Promise<void>
   }
   await navPromise;
 
-  // Confirm we're past the login page — case-insensitive check
-  const url = page.url().toLowerCase();
-  if (url.includes('login') || url.includes('signin') || url.includes('sign-in')) {
-    throw new Error(
-      'Login failed — check EASYCARS_EMAIL and EASYCARS_PASSWORD, or the EasyCars login page selectors may have changed.'
+  // Give SPA extra time to settle after login redirect
+  await new Promise((r) => setTimeout(r, 2000));
+
+  // Check URL first
+  if (isLoginUrl(page.url())) {
+    const diagShot = await jpeg(page);
+    throw Object.assign(
+      new Error('Login failed — check EASYCARS_EMAIL and EASYCARS_PASSWORD env vars, or the EasyCars login page selectors may have changed.'),
+      { diagShot }
+    );
+  }
+
+  // Also check for a password input still on the page — catches SPAs that
+  // show auth errors without changing the URL path
+  const stillHasPasswordField = await page.$('input[type="password"]');
+  if (stillHasPasswordField) {
+    const diagShot = await jpeg(page);
+    throw Object.assign(
+      new Error('Login failed — credentials were entered but EasyCars is still showing the login form. Check EASYCARS_EMAIL / EASYCARS_PASSWORD.'),
+      { diagShot }
     );
   }
 }
@@ -122,6 +142,13 @@ async function findVehicleByRego(page: Page, rego: string): Promise<void> {
   await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 20000 });
   // Wait for SPA to fully initialise
   await new Promise((r) => setTimeout(r, 3000));
+
+  // Guard: if we were redirected to login the session wasn't established
+  if (isLoginUrl(page.url())) {
+    throw new Error(
+      'Session not established — redirected to login page when accessing vehicles. Check EasyCars credentials.'
+    );
+  }
 
   // Find and use the search input
   const searchSelectors = [
@@ -204,11 +231,20 @@ export async function POST(request: NextRequest) {
     const screenshots = await scrollAndCapture(page);
     const finalUrl = page.url();
 
+    // Last-resort guard: never return screenshots of the login page
+    if (isLoginUrl(finalUrl)) {
+      return NextResponse.json(
+        { error: 'Captured screenshots appear to be of the login page — check EasyCars credentials and try again.' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({ screenshots, url: finalUrl });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error during scrape';
+    const diagShot = (err as { diagShot?: string }).diagShot;
     console.error('EasyCars scrape error:', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message, diagShot }, { status: 500 });
   } finally {
     await browser?.close();
   }
