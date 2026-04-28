@@ -464,8 +464,9 @@ export default function EasyCarsAgentPage() {
       setMessages((p) => [...p, { role: 'assistant', content: reply }]);
       setStep((s) => Math.max(s, detectStep(reply)));
       if (hasPayloads(reply)) setPushText(reply);
-    } catch {
-      setMessages((p) => [...p, { role: 'assistant', content: 'Network error — please try again.' }]);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      setMessages((p) => [...p, { role: 'assistant', content: `Error: ${msg}` }]);
     } finally {
       setLoading(false);
       setTimeout(() => inputRef.current?.focus(), 80);
