@@ -10,7 +10,7 @@ async function launchBrowser(): Promise<Browser> {
     const chromium = (await import('@sparticuz/chromium-min')).default;
     const puppeteer = (await import('puppeteer-core')).default;
     return puppeteer.launch({
-      args: [...chromium.args, '--disable-gpu', '--no-sandbox'],
+      args: [...chromium.args, '--disable-gpu', '--no-sandbox', '--disable-blink-features=AutomationControlled'],
       defaultViewport: { width: 1440, height: 900 },
       executablePath: await chromium.executablePath(
         'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar'
@@ -22,6 +22,7 @@ async function launchBrowser(): Promise<Browser> {
     const puppeteer = await import('puppeteer');
     return puppeteer.default.launch({
       headless: true,
+      args: ['--disable-blink-features=AutomationControlled'],
       defaultViewport: { width: 1440, height: 900 },
     });
   }
@@ -254,9 +255,27 @@ export async function POST(request: NextRequest) {
   try {
     browser = await launchBrowser();
     const page = await browser.newPage();
+
+    // Mask headless Chrome indicators that sites use for bot detection
+    await page.evaluateOnNewDocument(() => {
+      // Hide the webdriver flag — the #1 signal sites check
+      Object.defineProperty(navigator, 'webdriver', { get: () => false });
+      // Spoof a realistic plugin list (headless Chrome has none)
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => Object.assign([...Array(3)].map((_, i) => ({ name: `Plugin${i}` })), { length: 3 }),
+      });
+      // Report a normal language preference
+      Object.defineProperty(navigator, 'languages', { get: () => ['en-AU', 'en'] });
+    });
+
     await page.setUserAgent(
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
     );
+    // Extra headers a real browser always sends
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'en-AU,en;q=0.9',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    });
 
     const postLoginShot = await login(page, email, password);
     await findVehicleByRego(page, rego, postLoginShot);
