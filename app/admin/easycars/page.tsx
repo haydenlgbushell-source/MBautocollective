@@ -340,6 +340,105 @@ function ChatMsg({ msg }: { msg: ChatMessage }) {
   );
 }
 
+// ── Connect Session panel ─────────────────────────────────────────────────────
+
+function ConnectSession() {
+  const [open,   setOpen]   = useState(false);
+  const [json,   setJson]   = useState('');
+  const [status, setStatus] = useState<'idle' | 'saving' | 'ok' | 'error'>('idle');
+  const [msg,    setMsg]    = useState('');
+
+  const save = async () => {
+    setStatus('saving');
+    try {
+      let cookies: unknown[];
+      try { cookies = JSON.parse(json); } catch { throw new Error('Invalid JSON — make sure you copied the full export from Cookie-Editor.'); }
+      if (!Array.isArray(cookies)) throw new Error('Expected a JSON array of cookies.');
+
+      const res  = await fetch('/api/easycars-agent/save-session', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cookies }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Save failed');
+      setStatus('ok');
+      setMsg(`${data.count} cookies saved — session connected! Close this and search a rego.`);
+      setJson('');
+    } catch (e: unknown) {
+      setStatus('error');
+      setMsg((e as Error).message);
+    }
+  };
+
+  return (
+    <div style={{ borderBottom: `1px solid ${BORDER}`, background: DARK2 }}>
+      {/* Toggle button */}
+      <button
+        onClick={() => { setOpen((o) => !o); setStatus('idle'); setMsg(''); }}
+        style={{
+          width: '100%', background: 'transparent', border: 'none',
+          padding: '9px 16px', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}
+      >
+        <span style={{ fontSize: 11, fontFamily: FM, letterSpacing: '0.12em', textTransform: 'uppercase', color: status === 'ok' ? GREEN : '#666' }}>
+          {status === 'ok' ? '✓ Session Connected' : '🔌 Connect EasyCars Session'}
+        </span>
+        <span style={{ fontSize: 10, color: '#444', fontFamily: FM }}>{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Instructions */}
+          <div style={{ fontSize: 11, color: '#888', fontFamily: FB, lineHeight: 1.7, background: DARK3, padding: '10px 12px', border: `1px solid ${BORDER}` }}>
+            <strong style={{ color: GOLD }}>How to connect your EasyCars session:</strong><br />
+            1. Open EasyCars in this browser and make sure you&apos;re logged in<br />
+            2. Install the <strong style={{ color: '#f5f2ed' }}>Cookie-Editor</strong> Chrome extension<br />
+            3. Click the Cookie-Editor icon while on the EasyCars tab<br />
+            4. Click <strong style={{ color: '#f5f2ed' }}>Export → Export as JSON</strong> (copies to clipboard)<br />
+            5. Paste below and click <strong style={{ color: '#f5f2ed' }}>Save Session</strong>
+          </div>
+
+          {/* Cookie JSON textarea */}
+          <textarea
+            value={json}
+            onChange={(e) => { setJson(e.target.value); setStatus('idle'); }}
+            placeholder='Paste cookie JSON here — starts with [{"name":"...",...'
+            rows={5}
+            style={{
+              width: '100%', background: DARK3, border: `1px solid ${BORDER}`,
+              color: '#f5f2ed', padding: '8px 10px', fontSize: 11,
+              fontFamily: 'monospace', resize: 'vertical', outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+
+          {/* Status message */}
+          {msg && (
+            <div style={{ fontSize: 11, fontFamily: FB, color: status === 'ok' ? GREEN : RED, padding: '6px 10px', background: status === 'ok' ? 'rgba(76,175,80,0.08)' : 'rgba(239,83,80,0.08)', border: `1px solid ${status === 'ok' ? 'rgba(76,175,80,0.2)' : 'rgba(239,83,80,0.2)'}` }}>
+              {msg}
+            </div>
+          )}
+
+          <button
+            onClick={save}
+            disabled={!json.trim() || status === 'saving'}
+            style={{
+              background: !json.trim() || status === 'saving' ? '#222' : `linear-gradient(135deg,${GOLD} 0%,${GOLD_LO} 100%)`,
+              border: 'none', color: !json.trim() || status === 'saving' ? '#444' : DARK,
+              padding: '10px 0', fontSize: 12, fontWeight: 700,
+              cursor: !json.trim() || status === 'saving' ? 'not-allowed' : 'pointer',
+              fontFamily: FM, letterSpacing: '0.1em', textTransform: 'uppercase',
+            }}
+          >
+            {status === 'saving' ? 'Saving…' : 'Save Session'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function EasyCarsAgentPage() {
@@ -553,6 +652,9 @@ export default function EasyCarsAgentPage() {
         </div>
 
         <StepBar step={step} />
+
+        {/* ── Connect EasyCars Session ── */}
+        <ConnectSession />
 
         {/* ── Rego search bar ── */}
         <RegoBar onSearch={searchRego} scraping={scraping} scrapeError={scrapeError} />
