@@ -4,7 +4,6 @@ import Hero from '@/components/home/Hero';
 import SearchSection from '@/components/home/SearchSection';
 import FeaturedStock from '@/components/home/FeaturedStock';
 import CarSourcingSection from '@/components/home/CarSourcingSection';
-import FinanceBanner from '@/components/home/FinanceBanner';
 import TradeInSection from '@/components/home/TradeInSection';
 import ReviewsSection from '@/components/home/ReviewsSection';
 import ChatBubble from '@/components/ui/ChatBubble';
@@ -44,10 +43,7 @@ export default async function HomePage() {
         {/* 4. Car sourcing — can't find it, we'll source it */}
         <CarSourcingSection />
 
-        {/* 5. Finance banner */}
-        <FinanceBanner />
-
-        {/* 6. Trade-in / valuation section */}
+        {/* 5. Trade-in / valuation section */}
         <TradeInSection />
 
         {/* 7. Reviews / testimonials */}
