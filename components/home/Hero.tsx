@@ -10,7 +10,7 @@ interface HeroProps {
 export default function Hero({ availableCount }: HeroProps) {
   return (
     <section
-      className="relative flex flex-col justify-end overflow-hidden"
+      className="relative flex flex-col justify-end max-md:justify-between overflow-hidden"
       style={{ height: '100vh', minHeight: 700 }}
     >
       {/* Background */}
@@ -165,7 +165,7 @@ export default function Hero({ availableCount }: HeroProps) {
 
       {/* Hero content — bottom aligned, fades up */}
       <div
-        className="relative z-10 px-[60px] pb-[80px] max-w-[700px] animate-fadeup max-md:px-6 max-md:pb-[140px]"
+        className="relative z-10 px-[60px] pb-[80px] max-w-[700px] animate-fadeup max-md:px-6 max-md:pt-[96px] max-md:pb-10"
       >
         {/* Eyebrow */}
         <div className="flex items-center gap-[16px] mb-[20px]">
@@ -177,8 +177,7 @@ export default function Hero({ availableCount }: HeroProps) {
 
         {/* Title */}
         <h1
-          className="font-display font-[300] leading-[1.05] mb-6"
-          style={{ fontSize: 'clamp(52px, 6vw, 88px)', letterSpacing: '-0.01em' }}
+          className="hero-title font-display font-[300] leading-[1.05] mb-6"
         >
           Drive What
           <br />

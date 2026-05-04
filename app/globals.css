@@ -162,6 +162,18 @@ select option {
   color: var(--text);
 }
 
+/* ── Hero title — responsive font size ── */
+.hero-title {
+  font-size: 42px;
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 768px) {
+  .hero-title {
+    font-size: clamp(52px, 6vw, 88px);
+  }
+}
+
 /* ── Search filter grid — 5-col on desktop, stacked on mobile ── */
 .search-filter-grid {
   grid-template-columns: 1fr;
