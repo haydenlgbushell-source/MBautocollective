@@ -86,11 +86,11 @@ export default function ContactPage() {
               </div>
               <dl className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-1 text-[13px] text-text-2">
                 <dt className="text-text-3 font-mono-custom text-[10px] tracking-[0.12em]">Mon – Fri</dt>
-                <dd>9:00am – 6:00pm</dd>
-                <dt className="text-text-3 font-mono-custom text-[10px] tracking-[0.12em]">Saturday</dt>
                 <dd>9:00am – 5:00pm</dd>
-                <dt className="text-text-3 font-mono-custom text-[10px] tracking-[0.12em]">Sunday</dt>
+                <dt className="text-text-3 font-mono-custom text-[10px] tracking-[0.12em]">Saturday</dt>
                 <dd>By Appointment</dd>
+                <dt className="text-text-3 font-mono-custom text-[10px] tracking-[0.12em]">Sunday</dt>
+                <dd>Closed</dd>
               </dl>
             </div>
 

@@ -140,8 +140,9 @@ export default function Footer() {
             <div className="font-mono-custom text-[8px] tracking-[0.2em] uppercase text-text-3 mb-1">
               Hours
             </div>
-            <div className="text-[12px] text-text-2">Mon–Sat: 9am–6pm</div>
-            <div className="text-[11px] text-text-3 mt-1">By appointment welcome</div>
+            <div className="text-[12px] text-text-2">Mon–Fri: 9am–5pm</div>
+            <div className="text-[12px] text-text-2">Sat: By Appointment</div>
+            <div className="text-[11px] text-text-3 mt-1">Sun: Closed</div>
           </div>
         </div>
       </div>
