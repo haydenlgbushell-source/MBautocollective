@@ -47,16 +47,17 @@ export default function CarValuationPage() {
             <p className="text-[15px] text-text-2 leading-[1.9] mb-6">
               Selling privately means weeks of listings, tyre-kickers, and the risk of missing the
               right buyer. We make it simple — give us your details and {BUSINESS.director} will be
-              in touch within 24 hours with a fair market assessment.
+              in touch with a fair market assessment and, if you're happy to proceed, instant payment
+              on the spot.
             </p>
             <p className="text-[15px] text-text-2 leading-[1.9] mb-10">
               Our valuations are based on real current-market data and our experience across the
-              prestige segment. No pressure, no obligation.
+              prestige segment. No pressure, no obligation — and no waiting around for funds to clear.
             </p>
 
             <div className="grid grid-cols-2 gap-[1px] bg-border">
               {[
-                ['24h', 'Response Time'],
+                ['Instant', 'Payment'],
                 ['100%', 'No Obligation'],
                 ['Fair', 'Market Price'],
                 ['Simple', 'Process'],
