@@ -162,6 +162,17 @@ select option {
   color: var(--text);
 }
 
+/* ── Search filter grid — 5-col on desktop, stacked on mobile ── */
+.search-filter-grid {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .search-filter-grid {
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  }
+}
+
 /* ── HubSpot embedded form — dark theme overrides ── */
 .hubspot-form fieldset {
   max-width: 100% !important;

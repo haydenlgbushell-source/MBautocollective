@@ -230,10 +230,9 @@ export default function Hero({ availableCount }: HeroProps) {
           <div
             key={label}
             className={[
-              'group px-0 py-6 md:py-7 text-center transition-colors duration-300',
+              'group px-4 py-6 md:py-7 text-center transition-colors duration-300',
               'border-r even:border-r-0 md:even:border-r md:last:border-r-0',
               i < 2 ? 'max-md:border-b' : '',
-              i % 2 === 1 ? 'max-md:pr-[88px]' : '',
             ].join(' ')}
             style={{ borderColor: 'rgba(184,150,62,0.25)' }}
           >

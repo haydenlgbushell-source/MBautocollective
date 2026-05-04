@@ -45,7 +45,7 @@ export default function PhotoGallery({ photos, make, model, year }: PhotoGallery
 
   if (!photos || photos.length === 0) {
     return (
-      <div className="aspect-[16/8] bg-bg-3 flex items-center justify-center">
+      <div className="aspect-[4/3] md:aspect-[16/8] bg-bg-3 flex items-center justify-center">
         <CarSVG width={480} opacity={0.1} />
       </div>
     );
@@ -55,7 +55,7 @@ export default function PhotoGallery({ photos, make, model, year }: PhotoGallery
     <>
       {/* Hero image */}
       <div
-        className="aspect-[16/8] bg-bg-3 relative overflow-hidden cursor-pointer group"
+        className="aspect-[4/3] md:aspect-[16/8] bg-bg-3 relative overflow-hidden cursor-pointer group"
         onClick={() => setLightboxOpen(true)}
       >
         {photos.map((photo, i) => (
@@ -161,7 +161,7 @@ export default function PhotoGallery({ photos, make, model, year }: PhotoGallery
           )}
 
           {photos.length > 1 && (
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-[4px] z-10">
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-[4px] z-10 max-w-[88vw] overflow-x-auto">
               {photos.map((photo, i) => (
                 <button
                   key={i}

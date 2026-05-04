@@ -57,9 +57,9 @@ export default function FilterBar() {
       ))}
 
       {/* Search */}
-      <div className="ml-auto flex">
+      <div className="ml-auto max-md:ml-0 max-md:w-full flex">
         <input
-          className="bg-bg-2 border border-border border-r-0 px-4 py-2 font-body text-[12px] text-text outline-none w-[210px] focus:border-gold-lo transition-colors placeholder:text-text-3"
+          className="bg-bg-2 border border-border border-r-0 px-4 py-2 font-body text-[12px] text-text outline-none w-[210px] max-md:w-0 max-md:flex-1 focus:border-gold-lo transition-colors placeholder:text-text-3"
           placeholder="Search make, model, colour..."
           defaultValue={search}
           onKeyDown={(e) => {
@@ -69,7 +69,7 @@ export default function FilterBar() {
           }}
           onBlur={(e) => updateFilter('q', e.target.value)}
         />
-        <button className="bg-bg-3 border border-border px-[14px] py-2 text-text-3 hover:bg-gold-lo hover:text-gold-hi transition-all">
+        <button className="bg-bg-3 border border-border px-[14px] py-2 text-text-3 hover:bg-gold-lo hover:text-gold-hi transition-all flex-shrink-0">
           ⌕
         </button>
       </div>
