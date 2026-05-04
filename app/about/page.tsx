@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import CTABand from '@/components/home/CTABand';
-import ServicesSection from '@/components/home/ServicesSection';
 import { BUSINESS } from '@/lib/constants';
 
 export const metadata: Metadata = {
@@ -83,10 +81,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Why Buyers Choose Us — 6-panel grid */}
-        <ServicesSection />
-
-        <CTABand />
       </main>
       <Footer />
     </>
