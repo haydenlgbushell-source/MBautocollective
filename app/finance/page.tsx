@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import CTABand from '@/components/home/CTABand';
 import { BUSINESS } from '@/lib/constants';
 
 export const metadata: Metadata = {
@@ -117,6 +118,7 @@ export default function FinancePage() {
           </div>
         </section>
 
+        <CTABand />
       </main>
       <Footer />
     </>
