@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
         price,
         description,
         status,
+        features,
       } = sbRaw as Record<string, unknown>;
 
       if (!make || !model || !year || !price) {
@@ -68,8 +69,9 @@ export async function POST(request: NextRequest) {
         reg_expiry,
         price,
         description,
-        status: status || 'available',
-        photos: [],
+        status:   status || 'available',
+        features: Array.isArray(features) ? features : [],
+        photos:   [],
       });
 
       if (error) throw new Error(error.message);
