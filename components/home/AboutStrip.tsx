@@ -80,7 +80,7 @@ export default function AboutStrip() {
                 {label}
               </div>
               {sub && (
-                <div className="font-mono-custom text-[8px] tracking-[0.15em] uppercase text-text-3 opacity-70 mt-[3px]">
+                <div className="font-mono-custom text-[9px] tracking-[0.18em] uppercase text-gold-lo mt-[5px]">
                   {sub}
                 </div>
               )}
