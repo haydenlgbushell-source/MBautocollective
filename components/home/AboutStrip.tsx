@@ -65,18 +65,25 @@ export default function AboutStrip() {
       {/* Right — Stats grid */}
       <div className="bg-bg-3 px-[60px] py-20 flex flex-col justify-center max-md:px-6 max-md:py-12">
         <div className="grid grid-cols-2 gap-[1px] bg-border">
-          {[
-            ['126', 'Google Reviews'],
-            ['5★', 'Average Rating'],
-            ['12+', 'Years Experience'],
-            ['100%', 'Finance Options'],
-          ].map(([num, label]) => (
+          {(
+            [
+              [BUSINESS.reviewCount.toString(), 'Google Reviews', undefined],
+              [BUSINESS.reviewScore + '★', 'Google Rating', `${BUSINESS.reviewCount} reviews on Google`],
+              ['12+', 'Years Experience', undefined],
+              ['100%', 'Finance Options', undefined],
+            ] as [string, string, string | undefined][]
+          ).map(([num, label, sub]) => (
             <div key={label} className="bg-bg-3 px-9 py-9 group relative overflow-hidden">
               <div className="absolute bottom-0 left-0 right-0 h-px bg-gold-lo scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
               <div className="font-display text-[48px] font-[300] text-gold leading-none">{num}</div>
               <div className="font-mono-custom text-[9px] tracking-[0.22em] uppercase text-text-3 mt-[8px]">
                 {label}
               </div>
+              {sub && (
+                <div className="font-mono-custom text-[8px] tracking-[0.15em] uppercase text-text-3 opacity-70 mt-[3px]">
+                  {sub}
+                </div>
+              )}
             </div>
           ))}
         </div>

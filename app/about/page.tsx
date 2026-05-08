@@ -64,12 +64,14 @@ export default function AboutPage() {
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-[1px] bg-border self-start">
-              {[
-                ['126', 'Google Reviews'],
-                ['5.0★', 'Average Rating'],
-                ['12+', 'Years Experience'],
-                ['100%', 'Finance Available'],
-              ].map(([num, label]) => (
+              {(
+                [
+                  [BUSINESS.reviewCount.toString(), 'Google Reviews', undefined],
+                  [BUSINESS.reviewScore + '★', 'Google Rating', `${BUSINESS.reviewCount} reviews on Google`],
+                  ['12+', 'Years Experience', undefined],
+                  ['100%', 'Finance Available', undefined],
+                ] as [string, string, string | undefined][]
+              ).map(([num, label, sub]) => (
                 <div key={label} className="bg-bg-3 px-9 py-8">
                   <div className="font-display text-[44px] font-[300] text-gold leading-none">
                     {num}
@@ -77,6 +79,11 @@ export default function AboutPage() {
                   <div className="font-mono-custom text-[9px] tracking-[0.22em] uppercase text-text-3 mt-[6px]">
                     {label}
                   </div>
+                  {sub && (
+                    <div className="font-mono-custom text-[8px] tracking-[0.15em] uppercase text-text-3 opacity-70 mt-[3px]">
+                      {sub}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
