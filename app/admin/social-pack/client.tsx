@@ -6,7 +6,8 @@ import type { Vehicle } from '@/types/vehicle';
 import type { SocialPack, IGVariant } from '@/types/social';
 import { formatPrice, formatKm } from '@/lib/utils';
 import SocialPackCard from '@/components/admin/SocialPackCard';
-import { approvePack } from './actions';
+import { approvePack, updatePack } from './actions';
+import type { PackEdits } from './actions';
 
 export default function SocialPackClientPage({
   vehicles,
@@ -54,6 +55,17 @@ export default function SocialPackClientPage({
       })
       .catch((err) => setActionError(err.message ?? 'Network error'))
       .finally(() => setIsGenerating(false));
+  }
+
+  async function handleSave(packId: string, edits: PackEdits) {
+    setActionError(null);
+    const result = await updatePack(packId, edits);
+    if (result?.error) {
+      setActionError(result.error);
+      throw new Error(result.error);
+    } else {
+      router.refresh();
+    }
   }
 
   return (
@@ -144,6 +156,7 @@ export default function SocialPackClientPage({
             isPending={isPending}
             onApprove={handleApprove}
             onRegenerate={handleRegenerate}
+            onSave={handleSave}
           />
         </div>
       )}
