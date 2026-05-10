@@ -3,88 +3,10 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import type { Vehicle } from '@/types/vehicle';
-import { formatPrice, formatKm } from '@/lib/utils';
+import type { SocialPack, IGVariant, IGStory, TikTokShot, ReelShot } from '@/types/social';
+import { formatPrice } from '@/lib/utils';
 
 type Platform = 'instagram' | 'facebook' | 'marketplace' | 'tiktok' | 'linkedin' | 'threads';
-type IGVariant = 'lifestyle' | 'spec' | 'story';
-
-// ── Caption generators ─────────────────────────────────────────────────────
-
-function igCaption(v: Vehicle, variant: IGVariant): string {
-  const price = formatPrice(v.price);
-  const km = v.kilometres ? formatKm(v.kilometres) : null;
-  const title = `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ''}`;
-
-  if (variant === 'lifestyle') {
-    return `This is what precision feels like.\n\n${title} — now available at MB Auto Collective.\n\n${km ? `${km} · ` : ''}${price} drive away.\n\nBook your private viewing today. Link in bio.`;
-  }
-  if (variant === 'spec') {
-    const specs = [
-      v.engine ? `Engine: ${v.engine}` : null,
-      v.transmission ? `Trans: ${v.transmission}` : null,
-      v.fuel_type ? `Fuel: ${v.fuel_type}` : null,
-      km ? `Odometer: ${km}` : null,
-    ]
-      .filter(Boolean)
-      .join('\n');
-    return `${title}\n\n${specs}\n\n${price} drive away\n\nDM us or visit the link in bio.`;
-  }
-  return `NEW ARRIVAL ✨\n${title}\n${price}`;
-}
-
-function fbCaption(v: Vehicle): string {
-  const price = formatPrice(v.price);
-  const km = v.kilometres ? formatKm(v.kilometres) : null;
-  const title = `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ''}`;
-  const body =
-    v.short_description ||
-    (v.description ? v.description.slice(0, 220) + (v.description.length > 220 ? '…' : '') : 'A stunning example in exceptional condition.');
-  return `🚗 ${title} — Now Available!\n\n${body}\n\n${km ? `Odometer: ${km}\n` : ''}Price: ${price} drive away\n\nInterested? Send us a message or comment below!`;
-}
-
-function marketplaceListing(v: Vehicle): { title: string; desc: string } {
-  const km = v.kilometres ? formatKm(v.kilometres) : null;
-  const body =
-    v.short_description ||
-    (v.description ? v.description.slice(0, 320) + (v.description.length > 320 ? '…' : '') : 'Exceptional vehicle in outstanding condition.');
-  return {
-    title: `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ''}`,
-    desc: `${body}${km ? `\n\nOdometer: ${km}` : ''}\n\nContact MB Auto Collective for more info or to arrange a private viewing.`,
-  };
-}
-
-function linkedinPost(v: Vehicle): string {
-  const price = formatPrice(v.price);
-  const title = `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ''}`;
-  const body =
-    v.description
-      ? v.description.slice(0, 440) + (v.description.length > 440 ? '…' : '')
-      : 'A remarkable example of automotive engineering, presented in outstanding condition.';
-  return `We're proud to present the ${title} — a vehicle that exemplifies what we do at MB Auto Collective.\n\nOffered at ${price} drive away, this represents exceptional value in today's market.\n\n${body}\n\nIf you're seeking something exceptional, we'd love to connect.`;
-}
-
-function threadsPost(v: Vehicle): string {
-  const price = formatPrice(v.price);
-  const km = v.kilometres ? formatKm(v.kilometres) : null;
-  const title = `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ''}`;
-  const body = v.short_description || 'an exceptional example — rarely found in this condition.';
-  return `just dropped: ${title}\n\n${km ? `${km} · ` : ''}${price} drive away\n\n${body}\n\nDM for details 🤙`;
-}
-
-function tiktokShots(v: Vehicle) {
-  const price = formatPrice(v.price);
-  const title = `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ''}`;
-  return [
-    { ts: '0:00–0:03', shot: 'Cinematic exterior walk-around', caption: title },
-    { ts: '0:03–0:07', shot: 'Close-up: headlights, grille, badge', caption: `${v.make} precision engineering` },
-    { ts: '0:07–0:12', shot: 'Interior reveal — seats, dash', caption: 'Luxury inside and out' },
-    { ts: '0:12–0:16', shot: 'Spec card / odometer', caption: v.kilometres ? `${formatKm(v.kilometres)} · ${price}` : price },
-    { ts: '0:16–0:20', shot: 'CTA — link in bio', caption: 'DM us @MBAutoCollective' },
-  ];
-}
-
-const IG_HASHTAGS =
-  '#MBAutoCollective #LuxuryCars #PrestigeCars #GoldCoast #CarLife #ExoticCars #DreamCar #AutoCollective';
 
 const TABS: { id: Platform; label: string }[] = [
   { id: 'instagram', label: 'Instagram' },
@@ -95,44 +17,85 @@ const TABS: { id: Platform; label: string }[] = [
   { id: 'threads', label: 'Threads' },
 ];
 
-// ── Sub-components ─────────────────────────────────────────────────────────
+// ── Shared photo component ─────────────────────────────────────────────────
 
 function VehiclePhoto({
   src,
   alt,
   className,
-  style,
 }: {
   src?: string | null;
   alt: string;
   className?: string;
-  style?: React.CSSProperties;
 }) {
   if (!src) {
     return (
       <div
         className={`bg-bg-3 flex items-center justify-center text-text-3 text-[11px] tracking-widest uppercase ${className ?? ''}`}
-        style={style}
       >
         No photo
       </div>
     );
   }
   return (
-    <div className={`relative overflow-hidden ${className ?? ''}`} style={style}>
+    <div className={`relative overflow-hidden ${className ?? ''}`}>
       <Image src={src} alt={alt} fill className="object-cover" unoptimized />
+    </div>
+  );
+}
+
+// ── Empty state for tabs when no pack exists ───────────────────────────────
+
+function NoPack({ vehicleId, isPending, onRegenerate }: {
+  vehicleId: string;
+  isPending: boolean;
+  onRegenerate: (id: string) => void;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 gap-5">
+      <div className="font-mono-custom text-[9px] tracking-[0.3em] uppercase text-text-3">
+        No pack generated yet
+      </div>
+      <p className="text-[12px] text-text-3 text-center max-w-xs">
+        Generate a social pack to see AI-written captions, story cards, and platform content for this vehicle.
+      </p>
+      <button
+        onClick={() => onRegenerate(vehicleId)}
+        disabled={isPending}
+        className="bg-gold text-bg font-body text-[10px] tracking-[0.2em] uppercase px-6 py-3 font-[500] hover:bg-gold-hi transition-colors disabled:opacity-50"
+      >
+        {isPending ? 'Generating…' : 'Generate Pack'}
+      </button>
     </div>
   );
 }
 
 // ── Instagram Tab ──────────────────────────────────────────────────────────
 
-function InstagramTab({ v }: { v: Vehicle }) {
-  const [variant, setVariant] = useState<IGVariant>('lifestyle');
+function InstagramTab({
+  vehicle,
+  pack,
+  variant,
+  onVariantChange,
+}: {
+  vehicle: Vehicle;
+  pack: SocialPack;
+  variant: IGVariant;
+  onVariantChange: (v: IGVariant) => void;
+}) {
   const [photoIdx, setPhotoIdx] = useState(0);
-  const photos = v.photos ?? [];
-  const caption = igCaption(v, variant);
-  const title = `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ''}`;
+
+  const photos = pack.ig_photo_order ?? vehicle.photos ?? [];
+  const hashtagStr = (pack.ig_hashtags ?? []).join(' ');
+  const captionMap: Record<IGVariant, string | null> = {
+    lifestyle: pack.ig_caption_lifestyle,
+    spec: pack.ig_caption_spec,
+    story: pack.ig_caption_story,
+  };
+  const caption = captionMap[variant] ?? '';
+  const title = `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.variant ? ` ${vehicle.variant}` : ''}`;
+  const stories: IGStory[] = pack.ig_stories ?? [];
+  const reelScript: ReelShot[] = pack.ig_reel?.script ?? [];
 
   return (
     <div className="flex flex-col gap-10">
@@ -151,7 +114,7 @@ function InstagramTab({ v }: { v: Vehicle }) {
             </div>
             <div>
               <div className="text-[13px] font-semibold text-gray-900 font-sans leading-tight">mbautocollective</div>
-              <div className="text-[11px] text-gray-500 font-sans">Gold Coast, QLD</div>
+              <div className="text-[11px] text-gray-500 font-sans">Waterloo, Sydney</div>
             </div>
             <div className="ml-auto text-gray-400">
               <span className="text-[20px] leading-none">···</span>
@@ -193,13 +156,8 @@ function InstagramTab({ v }: { v: Vehicle }) {
             <span className="ml-auto text-[22px]">🔖</span>
           </div>
 
-          {/* Likes */}
-          <div className="px-4 pb-1">
-            <span className="text-[13px] font-semibold text-gray-900 font-sans">1,482 likes</span>
-          </div>
-
           {/* Caption */}
-          <div className="px-4 pb-3 text-[13px] text-gray-900 font-sans leading-[1.5]">
+          <div className="px-4 pb-4 pt-1 text-[13px] text-gray-900 font-sans leading-[1.5]">
             <span className="font-semibold">mbautocollective </span>
             {caption.split('\n').map((line, i) => (
               <span key={i}>
@@ -207,7 +165,9 @@ function InstagramTab({ v }: { v: Vehicle }) {
                 <br />
               </span>
             ))}
-            <span className="text-[#3897f0]">{IG_HASHTAGS}</span>
+            {hashtagStr && (
+              <span className="text-[#3897f0]">{hashtagStr}</span>
+            )}
           </div>
         </div>
 
@@ -231,7 +191,7 @@ function InstagramTab({ v }: { v: Vehicle }) {
                   name="ig-variant"
                   value={vr}
                   checked={variant === vr}
-                  onChange={() => setVariant(vr)}
+                  onChange={() => onVariantChange(vr)}
                   className="accent-[#b8963e]"
                 />
                 <span className="font-body text-[11px] tracking-[0.12em] uppercase">{vr}</span>
@@ -270,94 +230,97 @@ function InstagramTab({ v }: { v: Vehicle }) {
             </div>
             <div className="bg-bg-2 border border-border p-4 text-[12px] text-text-2 leading-relaxed whitespace-pre-wrap font-body">
               {caption}
-              {'\n\n'}
-              {IG_HASHTAGS}
+              {hashtagStr && `\n\n${hashtagStr}`}
             </div>
           </div>
         </div>
       </div>
 
       {/* Story cards */}
-      <div>
-        <div className="font-mono-custom text-[9px] tracking-[0.28em] uppercase text-text-3 mb-4">
-          Story Cards (9:16)
-        </div>
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {[
-            { label: 'Arrival', headline: 'NEW ARRIVAL', sub: `${v.year} ${v.make} ${v.model}` },
-            { label: 'Feature', headline: formatPrice(v.price), sub: 'Drive Away' },
-            { label: 'CTA', headline: 'Enquire Now', sub: 'Link in Bio ↗' },
-          ].map(({ label, headline, sub }) => (
-            <div
-              key={label}
-              className="relative flex-shrink-0 overflow-hidden rounded-[8px] shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
-              style={{ width: 120, height: 213 }}
-            >
-              <VehiclePhoto src={photos[0]} alt={title} className="w-full h-full" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                <div className="text-[9px] tracking-[0.2em] uppercase opacity-70 font-sans mb-1">{label}</div>
-                <div className="text-[14px] font-bold font-sans leading-tight">{headline}</div>
-                <div className="text-[10px] opacity-80 font-sans mt-[2px]">{sub}</div>
+      {stories.length > 0 && (
+        <div>
+          <div className="font-mono-custom text-[9px] tracking-[0.28em] uppercase text-text-3 mb-4">
+            Story Cards (9:16)
+          </div>
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {stories.map((story, idx) => (
+              <div
+                key={idx}
+                className="relative flex-shrink-0 overflow-hidden rounded-[8px] shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
+                style={{ width: 120, height: 213 }}
+              >
+                <VehiclePhoto src={story.photo_url} alt={`Story ${idx + 1}`} className="w-full h-full" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                  <div className="text-[10px] font-sans leading-snug">{story.text}</div>
+                </div>
+                <div className="absolute top-3 left-3 right-3 flex gap-[3px]">
+                  {stories.map((_, i) => (
+                    <div key={i} className={`h-[2px] flex-1 rounded-full ${i <= idx ? 'bg-white' : 'bg-white/40'}`} />
+                  ))}
+                </div>
               </div>
-              <div className="absolute top-3 left-3 right-3 flex gap-[3px]">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-[2px] flex-1 rounded-full bg-white/60" />
-                ))}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Reel storyboard */}
-      <div>
-        <div className="font-mono-custom text-[9px] tracking-[0.28em] uppercase text-text-3 mb-4">
-          Reel Storyboard
-        </div>
-        <div className="bg-bg-2 border border-border overflow-x-auto">
-          <table className="w-full border-collapse text-[12px]">
-            <thead>
-              <tr>
-                {['#', 'Timestamp', 'Shot', 'On-screen Text'].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left font-mono-custom text-[8px] tracking-[0.25em] uppercase text-text-3 px-4 py-3 border-b border-border font-[400]"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {tiktokShots(v).map((row, i) => (
-                <tr key={i} className="hover:bg-bg-3 transition-colors">
-                  <td className="px-4 py-3 border-b border-border text-gold font-mono-custom text-[11px]">{i + 1}</td>
-                  <td className="px-4 py-3 border-b border-border text-text-2 font-mono-custom text-[10px] whitespace-nowrap">{row.ts}</td>
-                  <td className="px-4 py-3 border-b border-border text-text">{row.shot}</td>
-                  <td className="px-4 py-3 border-b border-border text-text-2 italic">{row.caption}</td>
+      {reelScript.length > 0 && (
+        <div>
+          <div className="font-mono-custom text-[9px] tracking-[0.28em] uppercase text-text-3 mb-4">
+            Reel Storyboard
+          </div>
+          <div className="bg-bg-2 border border-border overflow-x-auto">
+            <table className="w-full border-collapse text-[12px]">
+              <thead>
+                <tr>
+                  {['#', 'Timestamp', 'Shot', 'On-screen Text'].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left font-mono-custom text-[8px] tracking-[0.25em] uppercase text-text-3 px-4 py-3 border-b border-border font-[400]"
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {reelScript.map((row, i) => (
+                  <tr key={i} className="hover:bg-bg-3 transition-colors">
+                    <td className="px-4 py-3 border-b border-border text-gold font-mono-custom text-[11px]">{i + 1}</td>
+                    <td className="px-4 py-3 border-b border-border text-text-2 font-mono-custom text-[10px] whitespace-nowrap">{row.timestamp}</td>
+                    <td className="px-4 py-3 border-b border-border text-text">{row.shot}</td>
+                    <td className="px-4 py-3 border-b border-border text-text-2 italic">{row.caption}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {pack.ig_reel?.audio_guidance && (
+            <div className="mt-3 px-4 py-3 border border-border bg-bg-2 text-[11px] text-text-3 leading-relaxed">
+              <span className="font-mono-custom text-[8px] tracking-[0.2em] uppercase text-text-3 mr-2">Audio:</span>
+              {pack.ig_reel.audio_guidance}
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 // ── Facebook Tab ───────────────────────────────────────────────────────────
 
-function FacebookTab({ v }: { v: Vehicle }) {
-  const caption = fbCaption(v);
-  const photos = v.photos ?? [];
-  const title = `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ''}`;
+function FacebookTab({ vehicle, pack }: { vehicle: Vehicle; pack: SocialPack }) {
+  const photos = pack.ig_photo_order ?? vehicle.photos ?? [];
+  const title = `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.variant ? ` ${vehicle.variant}` : ''}`;
+  const body = pack.fb_body ?? '';
+  const hashtags = (pack.fb_hashtags ?? []).join(' ');
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">
       {/* Post mockup */}
       <div className="bg-white rounded-[12px] overflow-hidden w-full max-w-[420px] flex-shrink-0 shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
-        {/* Header */}
         <div className="flex items-start gap-3 px-4 py-4">
           <div className="w-10 h-10 rounded-full bg-[#1877f2] flex items-center justify-center flex-shrink-0">
             <span className="text-white font-bold text-[13px] font-sans">MB</span>
@@ -372,31 +335,26 @@ function FacebookTab({ v }: { v: Vehicle }) {
           <div className="text-[#65676b] text-[20px]">···</div>
         </div>
 
-        {/* Post text */}
-        <div className="px-4 pb-3 text-[14px] text-[#1c1e21] font-sans leading-[1.6] whitespace-pre-wrap">
-          {caption}
+        <div className="px-4 pb-3 text-[13px] text-[#1c1e21] font-sans leading-[1.6] whitespace-pre-wrap">
+          {body}
         </div>
 
-        {/* 16:9 photo */}
         <div className="relative w-full bg-gray-100" style={{ paddingBottom: '56.25%' }}>
           <div className="absolute inset-0">
             <VehiclePhoto src={photos[0]} alt={title} className="w-full h-full" />
           </div>
         </div>
 
-        {/* Reaction counts */}
         <div className="px-4 py-2 flex justify-between items-center border-b border-[#e4e6ea]">
           <div className="flex items-center gap-1">
             <span className="text-[14px]">👍❤️😮</span>
-            <span className="text-[13px] text-[#65676b] font-sans">247</span>
           </div>
           <div className="flex gap-3">
-            <span className="text-[13px] text-[#65676b] font-sans hover:underline cursor-pointer">38 comments</span>
-            <span className="text-[13px] text-[#65676b] font-sans hover:underline cursor-pointer">12 shares</span>
+            <span className="text-[13px] text-[#65676b] font-sans cursor-pointer">Comments</span>
+            <span className="text-[13px] text-[#65676b] font-sans cursor-pointer">Shares</span>
           </div>
         </div>
 
-        {/* Action bar */}
         <div className="px-4 py-1 flex items-center">
           {[{ icon: '👍', label: 'Like' }, { icon: '💬', label: 'Comment' }, { icon: '↗', label: 'Share' }].map(
             ({ icon, label }) => (
@@ -416,8 +374,8 @@ function FacebookTab({ v }: { v: Vehicle }) {
       <div className="flex-1 min-w-0">
         <div className="font-mono-custom text-[9px] tracking-[0.25em] uppercase text-text-3 mb-2">Post Text</div>
         <div className="bg-bg-2 border border-border p-4 text-[12px] text-text-2 leading-relaxed whitespace-pre-wrap font-body">
-          {caption}
-          {'\n\n#MBAutoCollective #LuxuryCars #GoldCoast'}
+          {body}
+          {hashtags && `\n\n${hashtags}`}
         </div>
       </div>
     </div>
@@ -426,15 +384,14 @@ function FacebookTab({ v }: { v: Vehicle }) {
 
 // ── Marketplace Tab ────────────────────────────────────────────────────────
 
-function MarketplaceTab({ v }: { v: Vehicle }) {
-  const { title, desc } = marketplaceListing(v);
-  const photos = v.photos ?? [];
+function MarketplaceTab({ vehicle, pack }: { vehicle: Vehicle; pack: SocialPack }) {
+  const photos = pack.ig_photo_order ?? vehicle.photos ?? [];
+  const title = pack.marketplace_title ?? `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.variant ? ` ${vehicle.variant}` : ''}`;
+  const desc = pack.marketplace_body ?? '';
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">
-      {/* Listing card mockup */}
       <div className="bg-white rounded-[8px] overflow-hidden w-full max-w-[360px] flex-shrink-0 shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
-        {/* 4:3 photo */}
         <div className="relative w-full bg-gray-100" style={{ paddingBottom: '75%' }}>
           <div className="absolute inset-0">
             <VehiclePhoto src={photos[0]} alt={title} className="w-full h-full" />
@@ -443,12 +400,12 @@ function MarketplaceTab({ v }: { v: Vehicle }) {
 
         <div className="p-4">
           <div className="text-[22px] font-bold text-[#1c1e21] font-sans leading-tight mb-1">
-            {formatPrice(v.price)}
+            {formatPrice(vehicle.price)}
           </div>
-          <div className="text-[15px] font-semibold text-[#1c1e21] font-sans mb-1">{title}</div>
+          <div className="text-[15px] font-semibold text-[#1c1e21] font-sans mb-1">{`${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.variant ? ` ${vehicle.variant}` : ''}`}</div>
           <div className="flex items-center gap-1 text-[13px] text-[#65676b] font-sans mb-3">
             <span>📍</span>
-            <span>Gold Coast QLD</span>
+            <span>Waterloo NSW</span>
           </div>
           <p className="text-[13px] text-[#1c1e21] font-sans leading-[1.55] mb-4 line-clamp-4">
             {desc}
@@ -459,7 +416,6 @@ function MarketplaceTab({ v }: { v: Vehicle }) {
         </div>
       </div>
 
-      {/* Listing copy */}
       <div className="flex-1 min-w-0 flex flex-col gap-5">
         <div>
           <div className="font-mono-custom text-[9px] tracking-[0.25em] uppercase text-text-3 mb-2">Title</div>
@@ -468,7 +424,7 @@ function MarketplaceTab({ v }: { v: Vehicle }) {
         <div>
           <div className="font-mono-custom text-[9px] tracking-[0.25em] uppercase text-text-3 mb-2">Price</div>
           <div className="bg-bg-2 border border-border p-4 text-[13px] text-gold font-mono-custom">
-            {formatPrice(v.price)}
+            {formatPrice(vehicle.price)}
           </div>
         </div>
         <div>
@@ -484,11 +440,12 @@ function MarketplaceTab({ v }: { v: Vehicle }) {
 
 // ── TikTok Tab ─────────────────────────────────────────────────────────────
 
-function TikTokTab({ v }: { v: Vehicle }) {
-  const photos = v.photos ?? [];
-  const title = `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ''}`;
-  const shots = tiktokShots(v);
-  const price = formatPrice(v.price);
+function TikTokTab({ vehicle, pack }: { vehicle: Vehicle; pack: SocialPack }) {
+  const photos = pack.ig_photo_order ?? vehicle.photos ?? [];
+  const title = `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.variant ? ` ${vehicle.variant}` : ''}`;
+  const shots: TikTokShot[] = pack.tiktok_script ?? [];
+  const hashtags = (pack.tiktok_hashtags ?? []).join(' ');
+  const firstCaption = shots[0]?.caption ?? title;
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -498,7 +455,6 @@ function TikTokTab({ v }: { v: Vehicle }) {
           className="relative bg-black rounded-[32px] overflow-hidden shadow-[0_12px_60px_rgba(0,0,0,0.7)] border-[3px] border-[#2a2a2a]"
           style={{ width: 200, height: 355 }}
         >
-          {/* Status bar */}
           <div className="absolute top-0 left-0 right-0 h-8 flex items-center justify-between px-4 z-10">
             <span className="text-white text-[10px] font-sans font-semibold">9:41</span>
             <div className="w-16 h-4 bg-black rounded-full" />
@@ -507,23 +463,21 @@ function TikTokTab({ v }: { v: Vehicle }) {
             </div>
           </div>
 
-          {/* Video bg */}
           <VehiclePhoto src={photos[0]} alt={title} className="absolute inset-0 w-full h-full" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
 
-          {/* TikTok UI — right sidebar */}
           <div className="absolute right-2 bottom-24 flex flex-col items-center gap-4">
             <div className="flex flex-col items-center gap-1">
               <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
                 <span className="text-white text-[16px]">❤️</span>
               </div>
-              <span className="text-white text-[9px] font-sans">2.4K</span>
+              <span className="text-white text-[9px] font-sans">—</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
                 <span className="text-white text-[16px]">💬</span>
               </div>
-              <span className="text-white text-[9px] font-sans">183</span>
+              <span className="text-white text-[9px] font-sans">—</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
@@ -533,19 +487,17 @@ function TikTokTab({ v }: { v: Vehicle }) {
             </div>
           </div>
 
-          {/* Bottom text */}
           <div className="absolute left-2 bottom-8 right-12 text-white">
             <div className="text-[11px] font-semibold font-sans mb-[3px]">@mbautocollective</div>
-            <div className="text-[10px] font-sans leading-tight mb-1">{title}</div>
-            <div className="text-[9px] text-[#00f2ea] font-sans">#MBAutoCollective #LuxuryCars #GoldCoast</div>
+            <div className="text-[10px] font-sans leading-tight mb-1 line-clamp-2">{firstCaption}</div>
+            {hashtags && (
+              <div className="text-[9px] text-[#00f2ea] font-sans truncate">{hashtags}</div>
+            )}
           </div>
 
-          {/* Bottom nav */}
           <div className="absolute bottom-0 left-0 right-0 h-7 bg-black/80 flex items-center justify-around">
             {['🏠', '🔍', '+', '📥', '👤'].map((icon, i) => (
-              <span key={i} className="text-white text-[12px]">
-                {icon}
-              </span>
+              <span key={i} className="text-white text-[12px]">{icon}</span>
             ))}
           </div>
         </div>
@@ -574,7 +526,7 @@ function TikTokTab({ v }: { v: Vehicle }) {
               {shots.map((row, i) => (
                 <tr key={i} className="hover:bg-bg-3 transition-colors">
                   <td className="px-4 py-3 border-b border-border text-gold font-mono-custom text-[11px]">{i + 1}</td>
-                  <td className="px-4 py-3 border-b border-border text-text-2 font-mono-custom text-[10px] whitespace-nowrap">{row.ts}</td>
+                  <td className="px-4 py-3 border-b border-border text-text-2 font-mono-custom text-[10px] whitespace-nowrap">{row.timestamp}</td>
                   <td className="px-4 py-3 border-b border-border text-text">{row.shot}</td>
                   <td className="px-4 py-3 border-b border-border text-text-2 italic">{row.caption}</td>
                 </tr>
@@ -583,12 +535,14 @@ function TikTokTab({ v }: { v: Vehicle }) {
           </table>
         </div>
 
-        <div>
-          <div className="font-mono-custom text-[9px] tracking-[0.25em] uppercase text-text-3 mb-2">Caption / Bio Text</div>
-          <div className="bg-bg-2 border border-border p-4 text-[12px] text-text-2 leading-relaxed whitespace-pre-wrap font-body">
-            {`${title} 🔥\n\n${v.kilometres ? formatKm(v.kilometres) + ' · ' : ''}${price} drive away\n\nDM or visit link in bio 👇\n\n#MBAutoCollective #LuxuryCars #PrestigeCars #GoldCoast #${v.make.replace(/\s/g, '')}`}
+        {hashtags && (
+          <div>
+            <div className="font-mono-custom text-[9px] tracking-[0.25em] uppercase text-text-3 mb-2">Hashtags</div>
+            <div className="bg-bg-2 border border-border p-4 text-[12px] text-text-2 leading-relaxed font-body">
+              {hashtags}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -596,19 +550,18 @@ function TikTokTab({ v }: { v: Vehicle }) {
 
 // ── LinkedIn Tab ───────────────────────────────────────────────────────────
 
-function LinkedInTab({ v }: { v: Vehicle }) {
+function LinkedInTab({ vehicle, pack }: { vehicle: Vehicle; pack: SocialPack }) {
   const [expanded, setExpanded] = useState(false);
-  const post = linkedinPost(v);
+  const photos = pack.ig_photo_order ?? vehicle.photos ?? [];
+  const title = `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.variant ? ` ${vehicle.variant}` : ''}`;
+  const post = pack.linkedin_body ?? '';
+  const hashtags = (pack.linkedin_hashtags ?? []).join(' ');
   const preview = post.slice(0, 280);
   const showToggle = post.length > 280;
-  const photos = v.photos ?? [];
-  const title = `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ''}`;
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">
-      {/* Post mockup */}
       <div className="bg-white rounded-[8px] overflow-hidden w-full max-w-[440px] flex-shrink-0 shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
-        {/* Header */}
         <div className="flex items-start gap-3 px-4 pt-4 pb-3">
           <div className="w-12 h-12 rounded-[4px] bg-[#0077b5] flex items-center justify-center flex-shrink-0">
             <span className="text-white font-bold text-[15px] font-sans">MB</span>
@@ -617,7 +570,7 @@ function LinkedInTab({ v }: { v: Vehicle }) {
             <div className="text-[14px] font-semibold text-[#1c1e21] font-sans leading-tight">
               MB Auto Collective
             </div>
-            <div className="text-[12px] text-[#666] font-sans">Prestige Automotive · Gold Coast, QLD</div>
+            <div className="text-[12px] text-[#666] font-sans">Prestige Automotive · Waterloo, Sydney</div>
             <div className="text-[11px] text-[#999] font-sans">1h · 🌐</div>
           </div>
           <button className="border border-[#0077b5] text-[#0077b5] text-[13px] font-semibold font-sans px-4 py-1 rounded-full hover:bg-[#e8f3fb] transition-colors">
@@ -625,7 +578,6 @@ function LinkedInTab({ v }: { v: Vehicle }) {
           </button>
         </div>
 
-        {/* Post text */}
         <div className="px-4 pb-3 text-[14px] text-[#1c1e21] font-sans leading-[1.6]">
           <span className="whitespace-pre-wrap">{expanded || !showToggle ? post : preview + '…'}</span>
           {showToggle && (
@@ -638,23 +590,19 @@ function LinkedInTab({ v }: { v: Vehicle }) {
           )}
         </div>
 
-        {/* 16:9 photo */}
         <div className="relative w-full bg-gray-100" style={{ paddingBottom: '56.25%' }}>
           <div className="absolute inset-0">
             <VehiclePhoto src={photos[0]} alt={title} className="w-full h-full" />
           </div>
         </div>
 
-        {/* Reactions */}
         <div className="px-4 py-2 flex justify-between items-center border-b border-[#e4e6ea]">
           <div className="flex items-center gap-1">
             <span className="text-[14px]">👍❤️💡</span>
-            <span className="text-[13px] text-[#666] font-sans">312</span>
           </div>
-          <span className="text-[13px] text-[#666] font-sans hover:underline cursor-pointer">48 comments</span>
+          <span className="text-[13px] text-[#666] font-sans cursor-pointer">Comments</span>
         </div>
 
-        {/* Action bar */}
         <div className="px-4 py-1 flex items-center">
           {[
             { icon: '👍', label: 'Like' },
@@ -673,12 +621,11 @@ function LinkedInTab({ v }: { v: Vehicle }) {
         </div>
       </div>
 
-      {/* Post copy */}
       <div className="flex-1 min-w-0">
         <div className="font-mono-custom text-[9px] tracking-[0.25em] uppercase text-text-3 mb-2">Post Text</div>
         <div className="bg-bg-2 border border-border p-4 text-[12px] text-text-2 leading-relaxed whitespace-pre-wrap font-body">
           {post}
-          {'\n\n#MBAutoCollective #LuxuryAutomotive #PrestigeCars #GoldCoast'}
+          {hashtags && `\n\n${hashtags}`}
         </div>
       </div>
     </div>
@@ -687,20 +634,18 @@ function LinkedInTab({ v }: { v: Vehicle }) {
 
 // ── Threads Tab ────────────────────────────────────────────────────────────
 
-function ThreadsTab({ v }: { v: Vehicle }) {
-  const post = threadsPost(v);
-  const photos = v.photos ?? [];
-  const title = `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ''}`;
+function ThreadsTab({ vehicle, pack }: { vehicle: Vehicle; pack: SocialPack }) {
+  const photos = pack.ig_photo_order ?? vehicle.photos ?? [];
+  const title = `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.variant ? ` ${vehicle.variant}` : ''}`;
+  const post = pack.threads_body ?? '';
+  const hashtags = (pack.threads_hashtags ?? []).join(' ');
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">
-      {/* Post mockup */}
       <div className="w-full max-w-[420px] flex-shrink-0">
         <div className="bg-[#101010] rounded-[16px] border border-[#2a2a2a] overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.7)]">
           <div className="p-4">
-            {/* Thread header */}
             <div className="flex gap-3">
-              {/* Left column: avatar + thread line */}
               <div className="flex flex-col items-center flex-shrink-0">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#b8963e] to-[#7a6428] flex items-center justify-center">
                   <span className="text-white font-bold text-[12px] font-sans">MB</span>
@@ -708,18 +653,19 @@ function ThreadsTab({ v }: { v: Vehicle }) {
                 <div className="w-[2px] flex-1 bg-[#2a2a2a] mt-2 min-h-[40px]" />
               </div>
 
-              {/* Right: username + post */}
               <div className="flex-1 min-w-0 pb-3">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-white font-semibold text-[14px] font-sans">mbautocollective</span>
                   <span className="text-[#666] text-[13px] font-sans">· 1h</span>
                   <span className="ml-auto text-[#666] text-[18px]">···</span>
                 </div>
-                <div className="text-[#e0e0e0] text-[14px] font-sans leading-[1.6] whitespace-pre-wrap mb-3">
+                <div className="text-[#e0e0e0] text-[14px] font-sans leading-[1.6] whitespace-pre-wrap mb-2">
                   {post}
                 </div>
+                {hashtags && (
+                  <div className="text-[13px] text-[#888] font-sans mb-3">{hashtags}</div>
+                )}
 
-                {/* Photo embed */}
                 {photos[0] && (
                   <div className="relative rounded-[8px] overflow-hidden mb-3" style={{ height: 200 }}>
                     <VehiclePhoto src={photos[0]} alt={title} className="w-full h-full" />
@@ -730,15 +676,14 @@ function ThreadsTab({ v }: { v: Vehicle }) {
               </div>
             </div>
 
-            {/* Replies row */}
             <div className="flex items-center gap-4 pl-12 pt-1">
               <div className="flex items-center gap-1 text-[#666]">
                 <span className="text-[16px]">❤️</span>
-                <span className="text-[12px] font-sans">182</span>
+                <span className="text-[12px] font-sans">—</span>
               </div>
               <div className="flex items-center gap-1 text-[#666]">
                 <span className="text-[16px]">💬</span>
-                <span className="text-[12px] font-sans">24 replies</span>
+                <span className="text-[12px] font-sans">Replies</span>
               </div>
               <div className="flex items-center gap-1 text-[#666]">
                 <span className="text-[16px]">🔁</span>
@@ -749,32 +694,115 @@ function ThreadsTab({ v }: { v: Vehicle }) {
         </div>
       </div>
 
-      {/* Post copy */}
       <div className="flex-1 min-w-0">
         <div className="font-mono-custom text-[9px] tracking-[0.25em] uppercase text-text-3 mb-2">Post Text</div>
         <div className="bg-bg-2 border border-border p-4 text-[12px] text-text-2 leading-relaxed whitespace-pre-wrap font-body">
           {post}
+          {hashtags && `\n\n${hashtags}`}
         </div>
       </div>
     </div>
   );
 }
 
+// ── Quality Warnings ───────────────────────────────────────────────────────
+
+function QualityWarnings({ warnings }: { warnings: string[] }) {
+  return (
+    <div className="mt-10 border border-[rgba(245,158,11,0.35)] bg-[rgba(245,158,11,0.04)] p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-[13px]">⚠</span>
+        <div className="font-mono-custom text-[9px] tracking-[0.28em] uppercase text-[rgba(245,158,11,0.85)]">
+          Quality Warnings ({warnings.length})
+        </div>
+      </div>
+      <ul className="flex flex-col gap-3">
+        {warnings.map((w, i) => (
+          <li key={i} className="flex gap-3 text-[12px] text-text-2 leading-relaxed">
+            <span className="text-[rgba(245,158,11,0.6)] font-mono-custom text-[10px] mt-[2px] flex-shrink-0">
+              {i + 1}.
+            </span>
+            <span>{w}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// ── Pack status badge ──────────────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    pending: 'text-text-3 border-border',
+    approved: 'text-gold border-gold-lo',
+    published: 'text-green-400 border-green-900',
+    rejected: 'text-red-400 border-red-900',
+    failed: 'text-red-400 border-red-900',
+  };
+  return (
+    <span
+      className={`inline-block border px-2 py-[2px] font-mono-custom text-[8px] tracking-[0.2em] uppercase ${styles[status] ?? 'text-text-3 border-border'}`}
+    >
+      {status}
+    </span>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function SocialPackCard({ vehicle }: { vehicle: Vehicle }) {
+export default function SocialPackCard({
+  vehicle,
+  pack,
+  isPending,
+  onApprove,
+  onRegenerate,
+}: {
+  vehicle: Vehicle;
+  pack: SocialPack | null;
+  isPending: boolean;
+  onApprove: (packId: string, variant: IGVariant) => void;
+  onRegenerate: (vehicleId: string) => void;
+}) {
   const [tab, setTab] = useState<Platform>('instagram');
+  const [igVariant, setIgVariant] = useState<IGVariant>(
+    pack?.ig_caption_selected ?? 'lifestyle'
+  );
+
+  const hasPack = !!pack;
+  const isApproved = pack?.status === 'approved' || pack?.status === 'published';
 
   return (
     <div>
+      {/* Action bar */}
+      <div className="flex items-center gap-3 justify-end mb-6 flex-wrap">
+        {pack && <StatusBadge status={pack.status} />}
+        <button
+          onClick={() => onRegenerate(vehicle.id)}
+          disabled={isPending}
+          className="border border-border text-text-2 font-body text-[10px] tracking-[0.2em] uppercase px-5 py-[10px] font-[500] hover:border-gold-lo hover:text-text transition-all disabled:opacity-40"
+        >
+          {isPending ? 'Working…' : hasPack ? 'Regenerate' : 'Generate Pack'}
+        </button>
+        {hasPack && (
+          <button
+            onClick={() => onApprove(pack.id, igVariant)}
+            disabled={isPending || isApproved}
+            className="bg-gold text-bg font-body text-[10px] tracking-[0.2em] uppercase px-5 py-[10px] font-[500] hover:bg-gold-hi transition-colors disabled:opacity-40"
+          >
+            {isApproved ? '✓ Approved' : 'Approve'}
+          </button>
+        )}
+      </div>
+
       {/* Tab bar */}
       <div className="flex gap-0 border-b border-border mb-8 overflow-x-auto">
         {TABS.map(({ id, label }) => (
           <button
             key={id}
-            onClick={() => setTab(id)}
+            onClick={() => hasPack && setTab(id)}
             className={`px-5 py-3 font-body text-[10px] tracking-[0.18em] uppercase whitespace-nowrap border-b-2 transition-all -mb-[1px] ${
-              tab === id
+              tab === id && hasPack
                 ? 'border-b-gold text-gold'
                 : 'border-b-transparent text-text-3 hover:text-text-2'
             }`}
@@ -784,13 +812,34 @@ export default function SocialPackCard({ vehicle }: { vehicle: Vehicle }) {
         ))}
       </div>
 
+      {/* No-pack state */}
+      {!hasPack && (
+        <NoPack vehicleId={vehicle.id} isPending={isPending} onRegenerate={onRegenerate} />
+      )}
+
       {/* Tab content */}
-      {tab === 'instagram' && <InstagramTab v={vehicle} />}
-      {tab === 'facebook' && <FacebookTab v={vehicle} />}
-      {tab === 'marketplace' && <MarketplaceTab v={vehicle} />}
-      {tab === 'tiktok' && <TikTokTab v={vehicle} />}
-      {tab === 'linkedin' && <LinkedInTab v={vehicle} />}
-      {tab === 'threads' && <ThreadsTab v={vehicle} />}
+      {hasPack && (
+        <>
+          {tab === 'instagram' && (
+            <InstagramTab
+              vehicle={vehicle}
+              pack={pack}
+              variant={igVariant}
+              onVariantChange={setIgVariant}
+            />
+          )}
+          {tab === 'facebook' && <FacebookTab vehicle={vehicle} pack={pack} />}
+          {tab === 'marketplace' && <MarketplaceTab vehicle={vehicle} pack={pack} />}
+          {tab === 'tiktok' && <TikTokTab vehicle={vehicle} pack={pack} />}
+          {tab === 'linkedin' && <LinkedInTab vehicle={vehicle} pack={pack} />}
+          {tab === 'threads' && <ThreadsTab vehicle={vehicle} pack={pack} />}
+
+          {/* Quality warnings */}
+          {pack.quality_warnings && pack.quality_warnings.length > 0 && (
+            <QualityWarnings warnings={pack.quality_warnings} />
+          )}
+        </>
+      )}
     </div>
   );
 }
