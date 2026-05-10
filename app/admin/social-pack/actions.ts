@@ -1,45 +1,60 @@
 'use server';
 
-import { createAdminClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import type { IGVariant } from '@/types/social';
 
-export async function approvePack(packId: string, captionVariant: IGVariant) {
-  const supabase = await createAdminClient();
-  const { error } = await supabase
-    .from('social_packs')
-    .update({
-      status: 'approved',
-      ig_caption_selected: captionVariant,
-      approved_at: new Date().toISOString(),
-    })
-    .eq('id', packId);
-
-  if (error) throw new Error(error.message);
-  revalidatePath('/admin/social-pack');
+function adminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  );
 }
 
-export async function regeneratePack(vehicleId: string) {
-  const supabase = await createAdminClient();
-
-  const { data: existing } = await supabase
-    .from('social_packs')
-    .select('id')
-    .eq('vehicle_id', vehicleId)
-    .maybeSingle();
-
-  if (existing) {
+export async function approvePack(
+  packId: string,
+  captionVariant: IGVariant
+): Promise<{ error?: string }> {
+  try {
+    const supabase = adminClient();
     const { error } = await supabase
       .from('social_packs')
-      .update({ status: 'pending', regeneration_notes: `Manually requested ${new Date().toISOString()}` })
-      .eq('id', existing.id);
-    if (error) throw new Error(error.message);
-  } else {
-    const { error } = await supabase
-      .from('social_packs')
-      .insert({ vehicle_id: vehicleId, status: 'pending' });
-    if (error) throw new Error(error.message);
+      .update({
+        status: 'approved',
+        ig_caption_selected: captionVariant,
+        approved_at: new Date().toISOString(),
+      })
+      .eq('id', packId);
+
+    if (error) return { error: error.message };
+    revalidatePath('/admin/social-pack');
+    return {};
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Unknown error' };
   }
+}
 
-  revalidatePath('/admin/social-pack');
+export async function regeneratePack(vehicleId: string): Promise<{ error?: string }> {
+  try {
+    const supabase = adminClient();
+
+    // Upsert: create or reset to pending on conflict (unique vehicle_id constraint)
+    const { error } = await supabase
+      .from('social_packs')
+      .upsert(
+        {
+          vehicle_id: vehicleId,
+          status: 'pending',
+          regeneration_notes: `Manually requested ${new Date().toISOString()}`,
+        },
+        { onConflict: 'vehicle_id' }
+      );
+
+    if (error) return { error: error.message };
+    revalidatePath('/admin/social-pack');
+    return {};
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Unknown error' };
+  }
 }

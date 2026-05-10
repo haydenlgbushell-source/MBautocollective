@@ -17,21 +17,32 @@ export default function SocialPackClientPage({
 }) {
   const [selected, setSelected] = useState<Vehicle | null>(vehicles[0] ?? null);
   const [isPending, startTransition] = useTransition();
+  const [actionError, setActionError] = useState<string | null>(null);
   const router = useRouter();
 
   const pack = selected ? (packsMap[selected.id] ?? null) : null;
 
   function handleApprove(packId: string, variant: IGVariant) {
+    setActionError(null);
     startTransition(async () => {
-      await approvePack(packId, variant);
-      router.refresh();
+      const result = await approvePack(packId, variant);
+      if (result?.error) {
+        setActionError(result.error);
+      } else {
+        router.refresh();
+      }
     });
   }
 
   function handleRegenerate(vehicleId: string) {
+    setActionError(null);
     startTransition(async () => {
-      await regeneratePack(vehicleId);
-      router.refresh();
+      const result = await regeneratePack(vehicleId);
+      if (result?.error) {
+        setActionError(result.error);
+      } else {
+        router.refresh();
+      }
     });
   }
 
@@ -45,6 +56,20 @@ export default function SocialPackClientPage({
           Platform-ready content for every vehicle
         </div>
       </div>
+
+      {/* Action error */}
+      {actionError && (
+        <div className="mb-6 border border-red-900/40 bg-red-950/20 px-4 py-3 text-[12px] text-red-400 font-body flex items-start gap-3">
+          <span className="flex-shrink-0">⚠</span>
+          <span>{actionError}</span>
+          <button
+            onClick={() => setActionError(null)}
+            className="ml-auto text-red-600 hover:text-red-400 flex-shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Vehicle selector */}
       <div className="mb-8">
