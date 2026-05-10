@@ -6,7 +6,7 @@ import type { Vehicle } from '@/types/vehicle';
 import type { SocialPack, IGVariant } from '@/types/social';
 import { formatPrice, formatKm } from '@/lib/utils';
 import SocialPackCard from '@/components/admin/SocialPackCard';
-import { approvePack, regeneratePack } from './actions';
+import { approvePack } from './actions';
 
 export default function SocialPackClientPage({
   vehicles,
@@ -16,15 +16,17 @@ export default function SocialPackClientPage({
   packsMap: Record<string, SocialPack>;
 }) {
   const [selected, setSelected] = useState<Vehicle | null>(vehicles[0] ?? null);
-  const [isPending, startTransition] = useTransition();
+  const [isApprovePending, startApproveTransition] = useTransition();
+  const [isGenerating, setIsGenerating] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const router = useRouter();
 
   const pack = selected ? (packsMap[selected.id] ?? null) : null;
+  const isPending = isApprovePending || isGenerating;
 
   function handleApprove(packId: string, variant: IGVariant) {
     setActionError(null);
-    startTransition(async () => {
+    startApproveTransition(async () => {
       const result = await approvePack(packId, variant);
       if (result?.error) {
         setActionError(result.error);
@@ -36,14 +38,22 @@ export default function SocialPackClientPage({
 
   function handleRegenerate(vehicleId: string) {
     setActionError(null);
-    startTransition(async () => {
-      const result = await regeneratePack(vehicleId);
-      if (result?.error) {
-        setActionError(result.error);
-      } else {
-        router.refresh();
-      }
-    });
+    setIsGenerating(true);
+    fetch('/api/social-pack/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vehicle_id: vehicleId }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          setActionError(data.detail ?? data.error ?? 'Generation failed');
+        } else {
+          router.refresh();
+        }
+      })
+      .catch((err) => setActionError(err.message ?? 'Network error'))
+      .finally(() => setIsGenerating(false));
   }
 
   return (
