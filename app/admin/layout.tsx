@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/admin/inventory/new', label: 'Add Vehicle', icon: '+' },
   { href: '/admin/easycars', label: 'EasyCars Import', icon: '⬆' },
   { href: '/admin/leads', label: 'Leads / CRM', icon: '◎' },
+  { href: '/admin/social', label: 'Social Media', icon: '◇' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
