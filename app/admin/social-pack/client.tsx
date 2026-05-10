@@ -6,7 +6,7 @@ import type { Vehicle } from '@/types/vehicle';
 import type { SocialPack, IGVariant } from '@/types/social';
 import { formatPrice, formatKm } from '@/lib/utils';
 import SocialPackCard from '@/components/admin/SocialPackCard';
-import { approvePack, updatePack } from './actions';
+import { approvePack, updatePack, updateVehiclePhotos } from './actions';
 import type { PackEdits } from './actions';
 
 export default function SocialPackClientPage({
@@ -66,6 +66,13 @@ export default function SocialPackClientPage({
     } else {
       router.refresh();
     }
+  }
+
+  async function handleVehiclePhotosChange(vehicleId: string, photos: string[]) {
+    setActionError(null);
+    const result = await updateVehiclePhotos(vehicleId, photos);
+    if (result?.error) setActionError(result.error);
+    else router.refresh();
   }
 
   return (
@@ -157,6 +164,7 @@ export default function SocialPackClientPage({
             onApprove={handleApprove}
             onRegenerate={handleRegenerate}
             onSave={handleSave}
+            onVehiclePhotosChange={handleVehiclePhotosChange}
           />
         </div>
       )}

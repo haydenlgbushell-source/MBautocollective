@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import type { Vehicle } from '@/types/vehicle';
 import type { SocialPack, IGVariant, IGStory, TikTokShot, ReelShot } from '@/types/social';
@@ -202,6 +202,175 @@ function PhotoStrip({
   );
 }
 
+// ── Photo Library ──────────────────────────────────────────────────────────
+
+function PhotoLibrary({
+  vehicleId,
+  vehiclePhotos,
+  igPhotoOrder,
+  onVehiclePhotosChange,
+  onIgOrderChange,
+}: {
+  vehicleId: string;
+  vehiclePhotos: string[];
+  igPhotoOrder: string[];
+  onVehiclePhotosChange: (photos: string[]) => void;
+  onIgOrderChange: (order: string[]) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function uploadFile(file: File): Promise<string | null> {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('vehicleId', vehicleId);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: form });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      return data.url as string;
+    } catch {
+      return null;
+    }
+  }
+
+  async function handleFiles(files: FileList) {
+    const allowed = Array.from(files).filter((f) =>
+      ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(f.type)
+    );
+    if (!allowed.length) return;
+    setUploadError(null);
+    setUploading(true);
+    const uploaded: string[] = [];
+    for (const file of allowed) {
+      const url = await uploadFile(file);
+      if (url) uploaded.push(url);
+    }
+    setUploading(false);
+    if (uploaded.length < allowed.length) {
+      setUploadError(`${allowed.length - uploaded.length} file(s) failed to upload`);
+    }
+    if (uploaded.length > 0) {
+      const next = [...vehiclePhotos, ...uploaded];
+      onVehiclePhotosChange(next);
+      // auto-include new photos in ig_photo_order
+      onIgOrderChange([...igPhotoOrder, ...uploaded]);
+    }
+  }
+
+  function deletePhoto(url: string) {
+    const nextPhotos = vehiclePhotos.filter((p) => p !== url);
+    onVehiclePhotosChange(nextPhotos);
+    // also remove from ig_photo_order if present
+    if (igPhotoOrder.includes(url)) {
+      onIgOrderChange(igPhotoOrder.filter((p) => p !== url));
+    }
+  }
+
+  function toggleInPack(url: string) {
+    if (igPhotoOrder.includes(url)) {
+      onIgOrderChange(igPhotoOrder.filter((p) => p !== url));
+    } else {
+      onIgOrderChange([...igPhotoOrder, url]);
+    }
+  }
+
+  return (
+    <div className="mt-8 border-t border-border pt-8">
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
+        <div className="font-mono-custom text-[9px] tracking-[0.28em] uppercase text-text-3">
+          Photo Library ({vehiclePhotos.length})
+        </div>
+        <div className="text-[10px] text-text-3 font-body">
+          · Gold border = included in social pack · Click photo to toggle
+        </div>
+      </div>
+
+      {/* Upload zone */}
+      <div
+        className={`border border-dashed px-6 py-5 text-center cursor-pointer transition-all mb-5 ${
+          dragging
+            ? 'border-gold-lo bg-[rgba(201,168,76,0.08)]'
+            : 'border-border hover:border-gold-lo hover:bg-[rgba(201,168,76,0.04)]'
+        }`}
+        onClick={() => inputRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
+        }}
+      >
+        <div className="text-[11px] text-text-2 tracking-[0.04em]">
+          {uploading ? (
+            <span className="text-gold font-mono-custom text-[9px] tracking-[0.2em] uppercase">Uploading…</span>
+          ) : (
+            <>+ Add Photos — drag &amp; drop or click to browse</>
+          )}
+        </div>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp"
+          multiple
+          className="hidden"
+          onChange={(e) => e.target.files && handleFiles(e.target.files)}
+        />
+      </div>
+
+      {uploadError && (
+        <div className="mb-4 text-[11px] text-red-400 font-body">{uploadError}</div>
+      )}
+
+      {/* Photo grid */}
+      {vehiclePhotos.length > 0 ? (
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+          {vehiclePhotos.map((url, idx) => {
+            const inPack = igPhotoOrder.includes(url);
+            return (
+              <div key={`${url}-${idx}`} className="relative group aspect-[4/3] bg-bg-3 overflow-hidden">
+                {/* Thumbnail */}
+                <button
+                  onClick={() => toggleInPack(url)}
+                  className={`absolute inset-0 w-full h-full border-2 transition-all ${
+                    inPack ? 'border-gold' : 'border-transparent hover:border-gold-lo'
+                  }`}
+                  title={inPack ? 'Remove from social pack' : 'Include in social pack'}
+                >
+                  <Image src={url} alt={`Photo ${idx + 1}`} fill className="object-cover" unoptimized />
+                </button>
+
+                {/* Include badge */}
+                {inPack && (
+                  <div className="absolute top-1 left-1 bg-gold text-bg font-mono-custom text-[7px] tracking-[0.15em] uppercase px-[5px] py-[2px] pointer-events-none">
+                    #{igPhotoOrder.indexOf(url) + 1}
+                  </div>
+                )}
+
+                {/* Delete button */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); deletePhoto(url); }}
+                  className="absolute top-1 right-1 w-6 h-6 bg-[rgba(0,0,0,0.75)] text-text-2 hover:text-red-400 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete photo"
+                >
+                  ✕
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-[11px] text-text-3 text-center py-8">
+          No photos in catalogue yet — upload above to get started.
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Instagram Tab ──────────────────────────────────────────────────────────
 
 function InstagramTab({
@@ -212,6 +381,8 @@ function InstagramTab({
   isEditing,
   edits,
   onEdits,
+  vehiclePhotos,
+  onVehiclePhotosChange,
 }: {
   vehicle: Vehicle;
   pack: SocialPack;
@@ -220,6 +391,8 @@ function InstagramTab({
   isEditing: boolean;
   edits: EditState;
   onEdits: (patch: Partial<EditState>) => void;
+  vehiclePhotos: string[];
+  onVehiclePhotosChange: (photos: string[]) => void;
 }) {
   const [photoIdx, setPhotoIdx] = useState(0);
 
@@ -455,6 +628,17 @@ function InstagramTab({
             </div>
           )}
         </div>
+      )}
+
+      {/* Photo library — visible in edit mode */}
+      {isEditing && (
+        <PhotoLibrary
+          vehicleId={vehicle.id}
+          vehiclePhotos={vehiclePhotos}
+          igPhotoOrder={edits.ig_photo_order}
+          onVehiclePhotosChange={onVehiclePhotosChange}
+          onIgOrderChange={(order) => onEdits({ ig_photo_order: order })}
+        />
       )}
     </div>
   );
@@ -1000,6 +1184,7 @@ export default function SocialPackCard({
   onApprove,
   onRegenerate,
   onSave,
+  onVehiclePhotosChange,
 }: {
   vehicle: Vehicle;
   pack: SocialPack | null;
@@ -1007,6 +1192,7 @@ export default function SocialPackCard({
   onApprove: (packId: string, variant: IGVariant) => void;
   onRegenerate: (vehicleId: string) => void;
   onSave: (packId: string, edits: import('@/app/admin/social-pack/actions').PackEdits) => Promise<void>;
+  onVehiclePhotosChange: (vehicleId: string, photos: string[]) => Promise<void>;
 }) {
   const [tab, setTab] = useState<Platform>('instagram');
   const [igVariant, setIgVariant] = useState<IGVariant>(
@@ -1017,6 +1203,8 @@ export default function SocialPackCard({
     pack ? packToEditState(pack) : packToEditState({} as SocialPack)
   );
   const [isSaving, setIsSaving] = useState(false);
+  // Local mirror of vehicle.photos so photo library changes reflect immediately
+  const [vehiclePhotos, setVehiclePhotos] = useState<string[]>(vehicle.photos ?? []);
 
   const hasPack = !!pack;
   const isApproved = pack?.status === 'approved' || pack?.status === 'published';
@@ -1024,6 +1212,12 @@ export default function SocialPackCard({
   const patchEdits = useCallback((patch: Partial<EditState>) => {
     setEdits((prev) => ({ ...prev, ...patch }));
   }, []);
+
+  function handleVehiclePhotosChange(photos: string[]) {
+    setVehiclePhotos(photos);
+    // fire-and-forget — errors surface via parent's actionError
+    onVehiclePhotosChange(vehicle.id, photos);
+  }
 
   function handleEditToggle() {
     if (!pack) return;
@@ -1158,6 +1352,8 @@ export default function SocialPackCard({
               pack={pack}
               variant={igVariant}
               onVariantChange={setIgVariant}
+              vehiclePhotos={vehiclePhotos}
+              onVehiclePhotosChange={handleVehiclePhotosChange}
               {...tabProps}
             />
           )}

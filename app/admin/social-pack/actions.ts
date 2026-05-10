@@ -73,3 +73,22 @@ export async function updatePack(
     return { error: err instanceof Error ? err.message : 'Unknown error' };
   }
 }
+
+export async function updateVehiclePhotos(
+  vehicleId: string,
+  photos: string[]
+): Promise<{ error?: string }> {
+  try {
+    const supabase = adminClient();
+    const { error } = await supabase
+      .from('vehicles')
+      .update({ photos })
+      .eq('id', vehicleId);
+
+    if (error) return { error: error.message };
+    revalidatePath('/admin/social-pack');
+    return {};
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Unknown error' };
+  }
+}
