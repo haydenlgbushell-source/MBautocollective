@@ -2,7 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
-import type { IGVariant, IGStory, TikTokShot, IGReel } from '@/types/social';
+import type { IGVariant, IGStory, TikTokShot, IGReel, PublishPlatform, PublishResults } from '@/types/social';
 
 export interface PackEdits {
   ig_caption_lifestyle?: string;
@@ -90,5 +90,33 @@ export async function updateVehiclePhotos(
     return {};
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Unknown error' };
+  }
+}
+
+export interface PublishPackResult {
+  ok: boolean;
+  results: PublishResults;
+  error?: string;
+}
+
+export async function publishPack(
+  packId: string,
+  platforms: PublishPlatform[]
+): Promise<PublishPackResult> {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/api/social-pack/publish`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pack_id: packId, platforms }),
+      }
+    );
+    const data = await res.json();
+    if (!res.ok) return { ok: false, results: {}, error: data.error ?? 'Publish failed' };
+    revalidatePath('/admin/social-pack');
+    return { ok: data.ok, results: data.results ?? {} };
+  } catch (err) {
+    return { ok: false, results: {}, error: err instanceof Error ? err.message : 'Network error' };
   }
 }

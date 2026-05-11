@@ -3,10 +3,10 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Vehicle } from '@/types/vehicle';
-import type { SocialPack, IGVariant } from '@/types/social';
+import type { SocialPack, IGVariant, PublishPlatform, PublishResults } from '@/types/social';
 import { formatPrice, formatKm } from '@/lib/utils';
 import SocialPackCard from '@/components/admin/SocialPackCard';
-import { approvePack, updatePack, updateVehiclePhotos } from './actions';
+import { approvePack, updatePack, updateVehiclePhotos, publishPack } from './actions';
 import type { PackEdits } from './actions';
 
 export default function SocialPackClientPage({
@@ -73,6 +73,14 @@ export default function SocialPackClientPage({
     const result = await updateVehiclePhotos(vehicleId, photos);
     if (result?.error) setActionError(result.error);
     else router.refresh();
+  }
+
+  async function handlePublish(packId: string, platforms: PublishPlatform[]): Promise<PublishResults> {
+    setActionError(null);
+    const result = await publishPack(packId, platforms);
+    if (result.error) setActionError(result.error);
+    else router.refresh();
+    return result.results;
   }
 
   return (
@@ -165,6 +173,7 @@ export default function SocialPackClientPage({
             onRegenerate={handleRegenerate}
             onSave={handleSave}
             onVehiclePhotosChange={handleVehiclePhotosChange}
+            onPublish={handlePublish}
           />
         </div>
       )}

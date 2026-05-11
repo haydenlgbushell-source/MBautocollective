@@ -3,8 +3,9 @@
 import { useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import type { Vehicle } from '@/types/vehicle';
-import type { SocialPack, IGVariant, IGStory, TikTokShot, ReelShot } from '@/types/social';
+import type { SocialPack, IGVariant, IGStory, TikTokShot, ReelShot, PublishPlatform, PublishResults } from '@/types/social';
 import { formatPrice } from '@/lib/utils';
+import PublishModal from '@/components/admin/PublishModal';
 
 type Platform = 'instagram' | 'facebook' | 'marketplace' | 'tiktok' | 'linkedin' | 'threads';
 
@@ -1185,6 +1186,7 @@ export default function SocialPackCard({
   onRegenerate,
   onSave,
   onVehiclePhotosChange,
+  onPublish,
 }: {
   vehicle: Vehicle;
   pack: SocialPack | null;
@@ -1193,6 +1195,7 @@ export default function SocialPackCard({
   onRegenerate: (vehicleId: string) => void;
   onSave: (packId: string, edits: import('@/app/admin/social-pack/actions').PackEdits) => Promise<void>;
   onVehiclePhotosChange: (vehicleId: string, photos: string[]) => Promise<void>;
+  onPublish: (packId: string, platforms: PublishPlatform[]) => Promise<PublishResults>;
 }) {
   const [tab, setTab] = useState<Platform>('instagram');
   const [igVariant, setIgVariant] = useState<IGVariant>(
@@ -1203,11 +1206,13 @@ export default function SocialPackCard({
     pack ? packToEditState(pack) : packToEditState({} as SocialPack)
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
   // Local mirror of vehicle.photos so photo library changes reflect immediately
   const [vehiclePhotos, setVehiclePhotos] = useState<string[]>(vehicle.photos ?? []);
 
   const hasPack = !!pack;
   const isApproved = pack?.status === 'approved' || pack?.status === 'published';
+  const isPublished = pack?.status === 'published';
 
   const patchEdits = useCallback((patch: Partial<EditState>) => {
     setEdits((prev) => ({ ...prev, ...patch }));
@@ -1301,13 +1306,22 @@ export default function SocialPackCard({
             >
               {isPending ? 'Working…' : hasPack ? 'Regenerate' : 'Generate Pack'}
             </button>
-            {hasPack && (
+            {hasPack && !isApproved && (
               <button
                 onClick={() => onApprove(pack.id, igVariant)}
-                disabled={isPending || isApproved}
+                disabled={isPending}
                 className="bg-gold text-bg font-body text-[10px] tracking-[0.2em] uppercase px-5 py-[10px] font-[500] hover:bg-gold-hi transition-colors disabled:opacity-40"
               >
-                {isApproved ? '✓ Approved' : 'Approve'}
+                Approve
+              </button>
+            )}
+            {hasPack && isApproved && (
+              <button
+                onClick={() => setShowPublishModal(true)}
+                disabled={isPending}
+                className="bg-gold text-bg font-body text-[10px] tracking-[0.2em] uppercase px-5 py-[10px] font-[500] hover:bg-gold-hi transition-colors disabled:opacity-40"
+              >
+                {isPublished ? 'Published ✓' : 'Publish →'}
               </button>
             )}
           </>
@@ -1367,6 +1381,17 @@ export default function SocialPackCard({
             <QualityWarnings warnings={pack.quality_warnings} />
           )}
         </>
+      )}
+
+      {/* Publish modal */}
+      {showPublishModal && pack && (
+        <PublishModal
+          packId={pack.id}
+          isPublished={isPublished}
+          existingResults={pack.publish_results ?? null}
+          onPublish={(platforms) => onPublish(pack.id, platforms)}
+          onClose={() => setShowPublishModal(false)}
+        />
       )}
     </div>
   );

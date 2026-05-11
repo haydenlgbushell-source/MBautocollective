@@ -54,4 +54,17 @@ export interface SocialPack {
   approved_at: string | null;
   published_at: string | null;
   approved_by: string | null;
+  publish_results: PublishResults | null;
 }
+
+export interface PlatformResult {
+  success: boolean;
+  postId?: string;
+  postUrl?: string;
+  mediaId?: string;
+  error?: string;
+}
+
+export type PublishPlatform = 'facebook' | 'instagram' | 'linkedin';
+
+export type PublishResults = Partial<Record<PublishPlatform, PlatformResult>>;
