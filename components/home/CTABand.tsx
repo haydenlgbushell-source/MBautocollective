@@ -35,16 +35,16 @@ export default function CTABand() {
         </div>
       </div>
 
-      <div className="relative z-10 flex gap-[14px] flex-shrink-0 max-md:justify-center">
+      <div className="relative z-10 flex gap-[14px] flex-shrink-0 max-md:justify-center max-md:w-full max-md:flex-col">
         <Link
           href="/stock"
-          className="inline-flex items-center justify-center bg-gold text-bg font-body text-[11px] tracking-[0.22em] uppercase px-10 py-[15px] font-[500] hover:bg-gold-hi transition-colors no-underline"
+          className="inline-flex items-center justify-center bg-gold text-bg font-body text-[11px] tracking-[0.22em] uppercase px-10 py-[15px] font-[500] hover:bg-gold-hi transition-colors no-underline max-md:w-full"
         >
           View Stock
         </Link>
         <Link
           href="/contact"
-          className="inline-flex items-center justify-center bg-transparent text-text-2 font-body text-[11px] tracking-[0.22em] uppercase px-10 py-[15px] font-[300] border border-border-2 hover:border-gold-lo hover:text-gold transition-all no-underline"
+          className="inline-flex items-center justify-center bg-transparent text-text-2 font-body text-[11px] tracking-[0.22em] uppercase px-10 py-[15px] font-[300] border border-border-2 hover:border-gold-lo hover:text-gold transition-all no-underline max-md:w-full"
         >
           Talk to {BUSINESS.director}
         </Link>

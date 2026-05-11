@@ -87,7 +87,7 @@ export default function TradeInSection() {
 
         <h2
           className="font-display font-[300] leading-[1.1] mb-5"
-          style={{ fontSize: 'clamp(36px, 4vw, 52px)' }}
+          style={{ fontSize: 'clamp(26px, 4vw, 52px)' }}
         >
           Your Car,
           <br />
@@ -161,7 +161,7 @@ export default function TradeInSection() {
                 placeholder="e.g. ABC123 (NSW)"
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormInput
                   label="Make"
                   name="make"

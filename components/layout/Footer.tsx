@@ -28,7 +28,7 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-border">
-      <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr_1fr_1fr] gap-[52px] px-[52px] py-16 pb-12 max-md:px-6 max-md:gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[1.6fr_1fr_1fr_1fr] gap-[52px] px-[52px] py-16 pb-12 max-md:px-6 max-md:gap-8">
         {/* Brand */}
         <div>
           <div className="font-display text-[24px] font-[400] mb-[6px] tracking-[0.04em]">

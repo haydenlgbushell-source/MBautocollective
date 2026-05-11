@@ -31,7 +31,7 @@ export default function ReviewsSection() {
       {/* Decorative giant quote mark */}
       <div
         className="absolute top-4 left-8 font-display font-[400] leading-none pointer-events-none select-none"
-        style={{ fontSize: 260, color: 'rgba(201,168,76,0.04)' }}
+        style={{ fontSize: 'clamp(120px, 20vw, 260px)', color: 'rgba(201,168,76,0.04)' }}
         aria-hidden
       >
         &ldquo;
@@ -48,7 +48,7 @@ export default function ReviewsSection() {
           </div>
           <h2
             className="font-display font-[300] leading-[1.05]"
-            style={{ fontSize: 'clamp(36px, 4.5vw, 58px)' }}
+            style={{ fontSize: 'clamp(26px, 4.5vw, 58px)' }}
           >
             Real Stories,{' '}
             <em className="italic text-gold-hi">Real Results</em>
@@ -56,7 +56,7 @@ export default function ReviewsSection() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="font-display text-[72px] font-[300] text-gold leading-none">
+          <div className="font-display font-[300] text-gold leading-none" style={{ fontSize: 'clamp(48px, 8vw, 72px)' }}>
             {BUSINESS.reviewScore}
           </div>
           <div>

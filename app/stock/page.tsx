@@ -60,7 +60,7 @@ export default async function StockPage({ searchParams }: StockPageProps) {
           </div>
           <h1
             className="font-display font-[300] leading-[1.0]"
-            style={{ fontSize: 'clamp(44px, 6vw, 72px)' }}
+            style={{ fontSize: 'clamp(32px, 6vw, 72px)' }}
           >
             Current <em className="italic text-gold-hi">Stock</em>
           </h1>

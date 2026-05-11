@@ -379,13 +379,51 @@
   .slide { animation: none !important; }
 }
 
-/* Mobile trim */
+/* Tablet trim */
 @media (max-width: 1024px) {
   .hero {
     grid-template-columns: 1fr;
     padding: 60px 32px 80px;
-    gap: 80px;
+    gap: 60px;
   }
   .vline { display: none; }
   .stage { max-width: 460px; }
+}
+
+/* Mobile trim */
+@media (max-width: 640px) {
+  .hero {
+    padding: 40px 20px 60px;
+    gap: 40px;
+  }
+  .headline {
+    font-size: clamp(32px, 8vw, 54px);
+  }
+  .ctas {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 24px;
+  }
+  .meta {
+    gap: 24px;
+    margin-top: 36px;
+  }
+  .metaV {
+    font-size: 22px;
+  }
+  .marque {
+    min-width: 240px;
+  }
+  .make {
+    font-size: 36px;
+  }
+  .model {
+    font-size: 22px;
+  }
+  .stage { max-width: 100%; }
+  .stageMeta { gap: 12px; font-size: 7px; }
 }

@@ -70,9 +70,8 @@ export default function SearchSection() {
 
       {/* Filter bar */}
       <div
-        className="grid gap-[1px] mb-8 max-lg:grid-cols-1"
+        className="grid gap-[1px] mb-8 grid-cols-1 lg:grid-cols-[2fr_1fr_1fr_1fr_auto]"
         style={{
-          gridTemplateColumns: '2fr 1fr 1fr 1fr auto',
           background: 'rgba(184,150,62,0.2)',
         }}
       >
@@ -142,7 +141,7 @@ export default function SearchSection() {
         {/* Search button */}
         <button
           onClick={() => buildSearch()}
-          className="bg-gold text-bg font-body text-[10px] font-[600] tracking-[0.2em] uppercase px-10 hover:bg-gold-hi transition-colors max-lg:py-4"
+          className="bg-gold text-bg font-body text-[10px] font-[600] tracking-[0.2em] uppercase px-10 py-4 hover:bg-gold-hi transition-colors lg:py-0"
         >
           Search
         </button>

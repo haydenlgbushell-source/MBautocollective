@@ -14,7 +14,7 @@ export default function AboutStrip() {
 
         <h2
           className="font-display font-[300] leading-[1.05] mb-7"
-          style={{ fontSize: 'clamp(34px, 4vw, 52px)' }}
+          style={{ fontSize: 'clamp(26px, 4vw, 52px)' }}
         >
           Your Premier{' '}
           <em className="italic text-gold-hi">Destination</em>
@@ -32,7 +32,7 @@ export default function AboutStrip() {
         </p>
 
         {/* Credential card */}
-        <div className="border border-border bg-bg-3 px-7 py-6 inline-block min-w-[280px]">
+        <div className="border border-border bg-bg-3 px-7 py-6 block w-full max-w-[320px] max-md:max-w-full">
           <div className="flex items-center gap-3 mb-[14px]">
             {/* Pulsing green dot */}
             <span className="relative flex h-[8px] w-[8px]">
