@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Montserrat, DM_Mono } from 'next/font/google';
 import './globals.css';
 import CustomCursor from '@/components/ui/CustomCursor';
@@ -24,6 +24,12 @@ const dmMono = DM_Mono({
   variable: '--font-dm-mono',
   display: 'swap',
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   title: 'MB Auto Collective | Prestige Pre-Owned Cars | Waterloo Sydney',

@@ -24,7 +24,7 @@ export default function FeaturedStock({ vehicles }: FeaturedStockProps) {
           </div>
           <h2
             className="font-display font-[300] leading-[1.02]"
-            style={{ fontSize: 'clamp(36px, 4.5vw, 58px)' }}
+            style={{ fontSize: 'clamp(26px, 4.5vw, 58px)' }}
           >
             Featured <em className="italic text-gold-hi">Vehicles</em>
           </h2>

@@ -94,7 +94,7 @@ export default function ServicesSection() {
           </div>
           <h2
             className="font-display font-[300] leading-[1.05] max-w-[440px]"
-            style={{ fontSize: 'clamp(36px, 4.5vw, 58px)' }}
+            style={{ fontSize: 'clamp(26px, 4.5vw, 58px)' }}
           >
             What We{' '}
             <em className="italic text-gold-hi">Offer</em>
@@ -106,7 +106,7 @@ export default function ServicesSection() {
         {WHAT_WE_OFFER.map(({ num, icon, title, body }) => (
           <div
             key={num}
-            className="group bg-bg-2 px-10 py-12 relative overflow-hidden transition-colors duration-300 hover:bg-bg-3"
+            className="group bg-bg-2 px-6 py-8 md:px-10 md:py-12 relative overflow-hidden transition-colors duration-300 hover:bg-bg-3"
           >
             <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left" />
             <div

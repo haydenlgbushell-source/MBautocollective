@@ -109,7 +109,7 @@ export default function VehicleDetailPanel({ vehicle }: { vehicle: Vehicle }) {
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`relative font-mono-custom text-[9px] tracking-[0.3em] uppercase pb-[14px] mr-10 transition-colors ${
+            className={`relative font-mono-custom text-[9px] tracking-[0.3em] uppercase pb-[14px] mr-5 sm:mr-10 transition-colors ${
               tab === id ? 'text-gold' : 'text-text-3 hover:text-text-2'
             }`}
           >
@@ -123,7 +123,7 @@ export default function VehicleDetailPanel({ vehicle }: { vehicle: Vehicle }) {
 
       {/* Details */}
       {tab === 'details' && (
-        <div className="grid grid-cols-2 gap-[1px] bg-border">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[1px] bg-border">
           {SPEC_ROWS.map(({ key, label, format }) => {
             const raw = vehicle[key];
             if (raw == null) return null;

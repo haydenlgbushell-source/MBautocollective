@@ -17,7 +17,7 @@ export default function FinanceBanner() {
 
       <Link
         href="/finance"
-        className="inline-flex items-center gap-3 bg-bg text-gold font-body text-[10px] font-[600] tracking-[0.22em] uppercase px-9 py-[14px] hover:bg-bg-3 transition-colors no-underline flex-shrink-0"
+        className="inline-flex items-center justify-center gap-3 bg-bg text-gold font-body text-[10px] font-[600] tracking-[0.22em] uppercase px-9 py-[14px] hover:bg-bg-3 transition-colors no-underline flex-shrink-0 max-md:w-full"
       >
         Get Pre-Approved →
       </Link>
