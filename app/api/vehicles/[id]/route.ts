@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { upsertVehicleInCatalogue, deleteVehicleFromCatalogue } from '@/lib/platforms/whatsapp-catalogue';
+import type { Vehicle } from '@/types/vehicle';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -38,6 +40,9 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       .single();
 
     if (error) throw error;
+    upsertVehicleInCatalogue(data as Vehicle).catch((e) =>
+      console.error('WhatsApp catalogue sync failed:', e)
+    );
     return NextResponse.json(data);
   } catch {
     return NextResponse.json({ error: 'Failed to update vehicle' }, { status: 500 });
@@ -50,6 +55,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
     const supabase = await createAdminClient();
     const { error } = await supabase.from('vehicles').delete().eq('id', id);
     if (error) throw error;
+    deleteVehicleFromCatalogue(id).catch((e) =>
+      console.error('WhatsApp catalogue delete failed:', e)
+    );
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: 'Failed to delete vehicle' }, { status: 500 });

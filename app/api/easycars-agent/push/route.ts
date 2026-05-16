@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { generateSlug } from '@/lib/utils';
+import { upsertVehicleInCatalogue } from '@/lib/platforms/whatsapp-catalogue';
+import type { Vehicle } from '@/types/vehicle';
 
 interface PushRequest {
   supabase: Record<string, unknown>;
@@ -75,6 +77,19 @@ export async function POST(request: NextRequest) {
       });
 
       if (error) throw new Error(error.message);
+
+      // Fetch the inserted row so we have the full Vehicle (id, slug, etc.) for catalogue sync
+      const { data: inserted } = await supabase
+        .from('vehicles')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+      if (inserted) {
+        upsertVehicleInCatalogue(inserted as Vehicle).catch((e) =>
+          console.error('WhatsApp catalogue sync failed:', e)
+        );
+      }
+
       results.supabase = { ok: true, message: 'Vehicle added to Supabase ✓' };
     } catch (e: unknown) {
       results.supabase = { ok: false, message: (e as Error).message };

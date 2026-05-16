@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getVehicles } from '@/lib/supabase/vehicles';
 import { formatPrice, formatKm } from '@/lib/utils';
 import AdminDeleteButton from '@/components/admin/AdminDeleteButton';
+import WhatsAppSyncButton from '@/components/admin/WhatsAppSyncButton';
 
 export const revalidate = 0;
 
@@ -16,16 +17,19 @@ export default async function AdminInventoryPage() {
 
   return (
     <div className="px-12 py-12 max-md:px-6">
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
         <h1 className="font-display text-[36px] font-[300]">
           Inventory <em className="italic text-gold-hi">Management</em>
         </h1>
-        <Link
-          href="/admin/inventory/new"
-          className="inline-flex items-center gap-2 bg-gold text-bg font-body text-[10px] tracking-[0.2em] uppercase px-6 py-3 font-[500] hover:bg-gold-hi transition-colors no-underline"
-        >
-          + Add Vehicle
-        </Link>
+        <div className="flex items-center gap-4 flex-wrap">
+          <WhatsAppSyncButton />
+          <Link
+            href="/admin/inventory/new"
+            className="inline-flex items-center gap-2 bg-gold text-bg font-body text-[10px] tracking-[0.2em] uppercase px-6 py-3 font-[500] hover:bg-gold-hi transition-colors no-underline"
+          >
+            + Add Vehicle
+          </Link>
+        </div>
       </div>
 
       {vehicles.length === 0 ? (

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { generateSlug } from '@/lib/utils';
+import { upsertVehicleInCatalogue } from '@/lib/platforms/whatsapp-catalogue';
+import type { Vehicle } from '@/types/vehicle';
 
 export async function GET(_request: NextRequest) {
   try {
@@ -48,11 +50,17 @@ export async function POST(request: NextRequest) {
           .select()
           .single();
         if (e2) throw e2;
+        upsertVehicleInCatalogue(d2 as Vehicle).catch((e) =>
+          console.error('WhatsApp catalogue sync failed:', e)
+        );
         return NextResponse.json(d2, { status: 201 });
       }
       throw error;
     }
 
+    upsertVehicleInCatalogue(data as Vehicle).catch((e) =>
+      console.error('WhatsApp catalogue sync failed:', e)
+    );
     return NextResponse.json(data, { status: 201 });
   } catch (err) {
     console.error('POST /api/vehicles error:', err);
