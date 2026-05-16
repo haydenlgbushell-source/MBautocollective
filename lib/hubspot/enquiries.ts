@@ -28,6 +28,7 @@ interface HubSpotEnquiry {
   };
   formId?: string;
   pageUri?: string;
+  hutk?: string;
 }
 
 const CAR_SALES_PIPELINE = '1680745971';
@@ -67,7 +68,7 @@ export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
           { name: 'phone', value: data.phone ?? '' },
           { name: 'message', value: [data.message, vehicleNote].filter(Boolean).join('\n\n') },
         ],
-        { pageUri: data.pageUri, pageName: data.source }
+        { pageUri: data.pageUri, pageName: data.source, hutk: data.hutk }
       );
     } catch (err) {
       console.error('HubSpot Forms API error (non-fatal):', err);

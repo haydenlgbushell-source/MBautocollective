@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Montserrat, DM_Mono } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import CustomCursor from '@/components/ui/CustomCursor';
 
@@ -66,6 +67,13 @@ export default function RootLayout({
       <body className="bg-bg text-text font-body antialiased">
         <CustomCursor />
         {children}
+        {process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID && (
+          <Script
+            id="hs-script-loader"
+            src={`//js.hs-scripts.com/${process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID}.js`}
+            strategy="afterInteractive"
+          />
+        )}
       </body>
     </html>
   );
