@@ -8,6 +8,7 @@ import Badge from '@/components/ui/Badge';
 import PhotoGallery from '@/components/stock/PhotoGallery';
 import SimilarVehicles from '@/components/stock/SimilarVehicles';
 import VehicleDetailPanel from '@/components/stock/VehicleDetailPanel';
+import DescriptionBlock from '@/components/stock/DescriptionBlock';
 import { getVehicleBySlug } from '@/lib/supabase/vehicles';
 import { formatPrice, formatKm } from '@/lib/utils';
 import { BUSINESS } from '@/lib/constants';
@@ -138,9 +139,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   </span>
                   <div className="flex-1 h-px bg-border" />
                 </div>
-                <p className="text-[14px] text-text-2 leading-[1.92]">
-                  {vehicle.description}
-                </p>
+                <DescriptionBlock description={vehicle.description} />
               </div>
             )}
 
