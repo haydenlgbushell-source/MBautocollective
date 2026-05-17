@@ -161,8 +161,6 @@ export default function Hero({ availableCount }: HeroProps) {
   const current = vehicles[cursor % vehicles.length];
   const stockCount = availableCount ?? vehicles.length;
 
-  void BUSINESS;
-
   return (
     <main className={styles.page}>
       <span className={`${styles.vline} ${styles.vlineL}`}></span>
@@ -200,15 +198,9 @@ export default function Hero({ availableCount }: HeroProps) {
               </div>
             </div>
             <div className={styles.metaCell}>
-              <div className={styles.metaK}>Reviews</div>
+              <div className={styles.metaK}>{BUSINESS.reviewCount} × 5★ Reviews</div>
               <div className={styles.metaV}>
                 5.0<em>★</em>
-              </div>
-            </div>
-            <div className={styles.metaCell}>
-              <div className={styles.metaK}>Finance From</div>
-              <div className={styles.metaV}>
-                2.99<em>%</em>
               </div>
             </div>
           </div>
