@@ -62,15 +62,15 @@ async function handleIncomingMessage(body: WhatsAppWebhookPayload) {
   const text = message.text?.body ?? '';
   const customerName = value?.contacts?.[0]?.profile?.name;
 
-  const session = getSession(from);
+  const session = await getSession(from);
   const isFirstMessage = session.messages.length === 0;
 
   // ── 1. Get Claude's reply ────────────────────────────────────────────────
   const { reply, needsHuman } = await getAIResponse(session.messages, text);
 
   // ── 2. Persist conversation in session ──────────────────────────────────
-  addMessage(from, 'user', text);
-  addMessage(from, 'assistant', reply);
+  await addMessage(from, 'user', text);
+  await addMessage(from, 'assistant', reply);
 
   // ── 3. Send reply via WhatsApp ───────────────────────────────────────────
   await sendWhatsAppMessage(from, reply);
@@ -81,7 +81,7 @@ async function handleIncomingMessage(body: WhatsAppWebhookPayload) {
 
     if (!contactId) {
       contactId = await upsertContact(from, customerName);
-      updateSession(from, { contactId, name: customerName });
+      await updateSession(from, { contactId, name: customerName });
     }
 
     // Detect conversation intent to choose HubSpot deal stage
@@ -90,7 +90,7 @@ async function handleIncomingMessage(body: WhatsAppWebhookPayload) {
 
     if (dealInfo && !session.dealId) {
       const dealId = await createDeal(contactId, dealInfo.name, dealInfo.stage);
-      updateSession(from, { dealId });
+      await updateSession(from, { dealId });
     }
 
     if (isFirstMessage) {

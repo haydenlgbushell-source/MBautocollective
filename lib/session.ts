@@ -1,59 +1,55 @@
+import { Redis } from '@upstash/redis';
+
 export type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
 };
 
-type Session = {
+export type Session = {
   messages: ChatMessage[];
   contactId?: string;
   dealId?: string;
   name?: string;
-  lastActivity: number;
 };
 
-// In-memory store keyed by customer phone number.
-// Note: Vercel serverless functions are stateless — sessions persist only
-// within the same warm function instance. For production, swap this for
-// Redis (Upstash) or Supabase to persist across cold starts.
-const sessions = new Map<string, Session>();
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
-const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
+const SESSION_TTL_SECONDS = 60 * 60; // 1 hour
+const MAX_MESSAGES = 20;
 
-export function getSession(phone: string): Session {
-  const existing = sessions.get(phone);
-  if (existing) {
-    existing.lastActivity = Date.now();
-    return existing;
-  }
-  const session: Session = { messages: [], lastActivity: Date.now() };
-  sessions.set(phone, session);
-  return session;
+function key(phone: string) {
+  return `wa:session:${phone}`;
 }
 
-export function addMessage(
+export async function getSession(phone: string): Promise<Session> {
+  const data = await redis.get<Session>(key(phone));
+  return data ?? { messages: [] };
+}
+
+export async function addMessage(
   phone: string,
   role: 'user' | 'assistant',
   content: string,
-): void {
-  const session = getSession(phone);
+): Promise<void> {
+  const session = await getSession(phone);
   session.messages.push({ role, content });
+
   // Cap history to avoid ballooning Claude context costs
-  if (session.messages.length > 20) {
-    session.messages = session.messages.slice(-20);
+  if (session.messages.length > MAX_MESSAGES) {
+    session.messages = session.messages.slice(-MAX_MESSAGES);
   }
+
+  await redis.set(key(phone), session, { ex: SESSION_TTL_SECONDS });
 }
 
-export function updateSession(phone: string, updates: Partial<Session>): void {
-  const session = getSession(phone);
-  Object.assign(session, updates);
+export async function updateSession(
+  phone: string,
+  updates: Partial<Session>,
+): Promise<void> {
+  const session = await getSession(phone);
+  const updated = { ...session, ...updates };
+  await redis.set(key(phone), updated, { ex: SESSION_TTL_SECONDS });
 }
-
-// Best-effort TTL cleanup on warm instances
-setInterval(() => {
-  const now = Date.now();
-  for (const [phone, session] of sessions.entries()) {
-    if (now - session.lastActivity > SESSION_TTL_MS) {
-      sessions.delete(phone);
-    }
-  }
-}, 10 * 60 * 1000);
