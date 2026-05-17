@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { postToFacebook, postToInstagram } from '@/lib/platforms/facebook';
 import { postToLinkedIn } from '@/lib/platforms/linkedin';
+import { getLinkedInAccessToken } from '@/lib/platforms/linkedin-auth';
 
 export const maxDuration = 60;
 
@@ -113,13 +114,13 @@ export async function POST(request: NextRequest) {
 
   // ── LinkedIn ──────────────────────────────────────────────────────────────
   if (platforms.includes('linkedin')) {
-    const accessToken = process.env.LINKEDIN_ACCESS_TOKEN;
     const organizationId = process.env.LINKEDIN_ORGANIZATION_ID;
 
-    if (!accessToken || !organizationId) {
-      results.linkedin = { success: false, error: 'LinkedIn credentials not configured' };
+    if (!organizationId) {
+      results.linkedin = { success: false, error: 'LINKEDIN_ORGANIZATION_ID not configured' };
     } else {
       try {
+        const accessToken = await getLinkedInAccessToken();
         const text = joinCaption(pack.linkedin_body, pack.linkedin_hashtags);
         const result = await postToLinkedIn({ accessToken, organizationId, text, photoUrl: photos[0] });
         results.linkedin = { success: true, ...result };
