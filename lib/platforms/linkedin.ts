@@ -1,65 +1,63 @@
-// LinkedIn Marketing API — Company Page posts (UGC Posts API v2)
+// LinkedIn Posts API (REST) — Company Page posts
+// Replaces the deprecated UGC Posts v2 + Assets v2 endpoints.
+// Requires Community Management API product with w_organization_social scope.
 
-const LI_BASE = 'https://api.linkedin.com/v2';
+const LI_BASE = 'https://api.linkedin.com/rest';
+const LI_VERSION = '202503'; // LinkedIn API versioning: YYYYMM
 
 export interface LinkedInPostResult {
   postId: string;
   postUrl: string;
 }
 
-// Fetches an image from a URL and uploads it to LinkedIn, returning the asset URN.
-async function registerAndUploadImage(
+function liHeaders(accessToken: string): Record<string, string> {
+  return {
+    Authorization: `Bearer ${accessToken}`,
+    'LinkedIn-Version': LI_VERSION,
+    'X-Restli-Protocol-Version': '2.0.0',
+    'Content-Type': 'application/json',
+  };
+}
+
+// Uploads an image to LinkedIn and returns the image URN.
+async function uploadImage(
   imageUrl: string,
   accessToken: string,
   organizationUrn: string
 ): Promise<string> {
-  // 1. Register upload
-  const registerRes = await fetch(`${LI_BASE}/assets?action=registerUpload`, {
+  // 1. Initialize upload — get a pre-signed upload URL and image URN
+  const initRes = await fetch(`${LI_BASE}/images?action=initializeUpload`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      'X-Restli-Protocol-Version': '2.0.0',
-    },
+    headers: liHeaders(accessToken),
     body: JSON.stringify({
-      registerUploadRequest: {
-        recipes: ['urn:li:digitalmediaRecipe:feedshare-image'],
-        owner: organizationUrn,
-        serviceRelationships: [
-          { relationshipType: 'OWNER', identifier: 'urn:li:userGeneratedContent' },
-        ],
-      },
+      initializeUploadRequest: { owner: organizationUrn },
     }),
   });
 
-  if (!registerRes.ok) {
-    const err = await registerRes.json().catch(() => ({}));
+  if (!initRes.ok) {
+    const err = await initRes.json().catch(() => ({}));
     throw new Error(
-      (err as { message?: string }).message ?? `LinkedIn register upload ${registerRes.status}`
+      (err as { message?: string }).message ?? `LinkedIn image init failed: ${initRes.status}`
     );
   }
 
-  const registerData = await registerRes.json();
-  const uploadUrl: string | undefined =
-    registerData.value?.uploadMechanism?.[
-      'com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'
-    ]?.uploadUrl;
-  const asset: string | undefined = registerData.value?.asset;
+  const { value } = await initRes.json();
+  const uploadUrl: string | undefined = value?.uploadUrl;
+  const imageUrn: string | undefined = value?.image;
 
-  if (!uploadUrl || !asset) throw new Error('LinkedIn image registration returned no upload URL');
+  if (!uploadUrl || !imageUrn) {
+    throw new Error('LinkedIn image init returned no uploadUrl or image URN');
+  }
 
-  // 2. Fetch the source image
+  // 2. Fetch source image
   const imgRes = await fetch(imageUrl);
   if (!imgRes.ok) throw new Error(`Failed to fetch image for LinkedIn: ${imageUrl}`);
   const imgBuffer = await imgRes.arrayBuffer();
 
-  // 3. Upload binary to LinkedIn
+  // 3. Upload binary to LinkedIn's pre-signed URL (no auth header — signed URL handles auth)
   const uploadRes = await fetch(uploadUrl, {
     method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': imgRes.headers.get('content-type') ?? 'image/jpeg',
-    },
+    headers: { 'Content-Type': imgRes.headers.get('content-type') ?? 'image/jpeg' },
     body: imgBuffer,
   });
 
@@ -67,7 +65,7 @@ async function registerAndUploadImage(
     throw new Error(`LinkedIn image upload failed: ${uploadRes.status}`);
   }
 
-  return asset;
+  return imageUrn;
 }
 
 // ── Company Page Post ──────────────────────────────────────────────────────
@@ -81,53 +79,47 @@ export async function postToLinkedIn(opts: {
   const { accessToken, organizationId, text, photoUrl } = opts;
   const organizationUrn = `urn:li:organization:${organizationId}`;
 
-  let mediaSection: object | undefined;
-
+  let imageUrn: string | undefined;
   if (photoUrl) {
-    const asset = await registerAndUploadImage(photoUrl, accessToken, organizationUrn);
-    mediaSection = [
-      {
-        status: 'READY',
-        description: { text: '' },
-        media: asset,
-        title: { text: '' },
-      },
-    ];
+    imageUrn = await uploadImage(photoUrl, accessToken, organizationUrn);
   }
 
-  const ugcPost = {
+  const post: Record<string, unknown> = {
     author: organizationUrn,
+    commentary: text,
+    visibility: 'PUBLIC',
+    distribution: {
+      feedDistribution: 'MAIN_FEED',
+      targetEntities: [],
+      thirdPartyDistributionChannels: [],
+    },
     lifecycleState: 'PUBLISHED',
-    specificContent: {
-      'com.linkedin.ugc.ShareContent': {
-        shareCommentary: { text },
-        shareMediaCategory: photoUrl ? 'IMAGE' : 'NONE',
-        ...(mediaSection ? { media: mediaSection } : {}),
-      },
-    },
-    visibility: {
-      'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
-    },
+    isReshareDisabledByAuthor: false,
   };
 
-  const res = await fetch(`${LI_BASE}/ugcPosts`, {
+  if (imageUrn) {
+    post.content = {
+      media: {
+        title: '',
+        id: imageUrn,
+      },
+    };
+  }
+
+  const res = await fetch(`${LI_BASE}/posts`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      'X-Restli-Protocol-Version': '2.0.0',
-    },
-    body: JSON.stringify(ugcPost),
+    headers: liHeaders(accessToken),
+    body: JSON.stringify(post),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(
-      (err as { message?: string }).message ?? `LinkedIn ugcPosts ${res.status}`
+      (err as { message?: string }).message ?? `LinkedIn POST /rest/posts ${res.status}`
     );
   }
 
-  // LinkedIn returns the post URN in the x-restli-id header
+  // Post URN is returned in x-restli-id header (e.g. urn:li:share:1234567890)
   const postUrn = res.headers.get('x-restli-id') ?? '';
   const encoded = encodeURIComponent(postUrn);
   return {
