@@ -209,12 +209,14 @@ function PhotoLibrary({
   vehicleId,
   vehiclePhotos,
   igPhotoOrder,
+  isEditing,
   onVehiclePhotosChange,
   onIgOrderChange,
 }: {
   vehicleId: string;
   vehiclePhotos: string[];
   igPhotoOrder: string[];
+  isEditing: boolean;
   onVehiclePhotosChange: (photos: string[]) => void;
   onIgOrderChange: (order: string[]) => void;
 }) {
@@ -285,12 +287,14 @@ function PhotoLibrary({
           Photo Library ({vehiclePhotos.length})
         </div>
         <div className="text-[10px] text-text-3 font-body">
-          · Gold border = included in social pack · Click photo to toggle
+          {isEditing
+            ? '· Gold border = included in social pack · Click photo to toggle'
+            : '· Gold border = included in social pack · Enter edit mode to manage'}
         </div>
       </div>
 
-      {/* Upload zone */}
-      <div
+      {/* Upload zone — edit mode only */}
+      {isEditing && <div
         className={`border border-dashed px-6 py-5 text-center cursor-pointer transition-all mb-5 ${
           dragging
             ? 'border-gold-lo bg-[rgba(201,168,76,0.08)]'
@@ -320,9 +324,9 @@ function PhotoLibrary({
           className="hidden"
           onChange={(e) => e.target.files && handleFiles(e.target.files)}
         />
-      </div>
+      </div>}
 
-      {uploadError && (
+      {uploadError && isEditing && (
         <div className="mb-4 text-[11px] text-red-400 font-body">{uploadError}</div>
       )}
 
@@ -335,11 +339,11 @@ function PhotoLibrary({
               <div key={`${url}-${idx}`} className="relative group aspect-[4/3] bg-bg-3 overflow-hidden">
                 {/* Thumbnail */}
                 <button
-                  onClick={() => toggleInPack(url)}
+                  onClick={() => isEditing && toggleInPack(url)}
                   className={`absolute inset-0 w-full h-full border-2 transition-all ${
-                    inPack ? 'border-gold' : 'border-transparent hover:border-gold-lo'
-                  }`}
-                  title={inPack ? 'Remove from social pack' : 'Include in social pack'}
+                    inPack ? 'border-gold' : isEditing ? 'border-transparent hover:border-gold-lo' : 'border-transparent'
+                  } ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}
+                  title={isEditing ? (inPack ? 'Remove from social pack' : 'Include in social pack') : undefined}
                 >
                   <Image src={url} alt={`Photo ${idx + 1}`} fill className="object-cover" unoptimized />
                 </button>
@@ -351,21 +355,25 @@ function PhotoLibrary({
                   </div>
                 )}
 
-                {/* Delete button */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); deletePhoto(url); }}
-                  className="absolute top-1 right-1 w-6 h-6 bg-[rgba(0,0,0,0.75)] text-text-2 hover:text-red-400 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Delete photo"
-                >
-                  ✕
-                </button>
+                {/* Delete button — edit mode only */}
+                {isEditing && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deletePhoto(url); }}
+                    className="absolute top-1 right-1 w-6 h-6 bg-[rgba(0,0,0,0.75)] text-text-2 hover:text-red-400 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Delete photo"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             );
           })}
         </div>
       ) : (
         <div className="text-[11px] text-text-3 text-center py-8">
-          No photos in catalogue yet — upload above to get started.
+          {isEditing
+            ? 'No photos in catalogue yet — upload above to get started.'
+            : 'No photos in catalogue yet — enter edit mode to upload.'}
         </div>
       )}
     </div>
@@ -631,16 +639,15 @@ function InstagramTab({
         </div>
       )}
 
-      {/* Photo library — visible in edit mode */}
-      {isEditing && (
-        <PhotoLibrary
-          vehicleId={vehicle.id}
-          vehiclePhotos={vehiclePhotos}
-          igPhotoOrder={edits.ig_photo_order}
-          onVehiclePhotosChange={onVehiclePhotosChange}
-          onIgOrderChange={(order) => onEdits({ ig_photo_order: order })}
-        />
-      )}
+      {/* Photo library — always visible; interactions gated inside by isEditing */}
+      <PhotoLibrary
+        vehicleId={vehicle.id}
+        vehiclePhotos={vehiclePhotos}
+        igPhotoOrder={edits.ig_photo_order}
+        isEditing={isEditing}
+        onVehiclePhotosChange={onVehiclePhotosChange}
+        onIgOrderChange={(order) => onEdits({ ig_photo_order: order })}
+      />
     </div>
   );
 }
