@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
     "@sparticuz/chromium": "^148.0.0",
     "@sparticuz/chromium-min": "^148.0.0",
     "@supabase/ssr": "^0.5.1",

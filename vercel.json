@@ -4,6 +4,11 @@
   "devCommand": "next dev",
   "installCommand": "npm install",
   "regions": ["syd1"],
+  "functions": {
+    "app/api/webhook/route.ts": {
+      "maxDuration": 30
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",
