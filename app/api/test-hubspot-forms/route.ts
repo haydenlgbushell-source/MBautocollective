@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createHubSpotEnquiry } from '@/lib/hubspot/enquiries';
 
-const TEST_EMAIL_BASE = 'claude-test';
-const TEST_DOMAIN = 'mbautocollective-test.invalid';
-
 const TESTS = [
   {
     label: 'contact',
     data: {
       name: 'Claude Test Contact',
-      email: `${TEST_EMAIL_BASE}+contact@${TEST_DOMAIN}`,
+      email: 'claude-test+contact@example.com',
       phone: '0400000001',
       message: 'Automated test: contact form',
       source: 'contact' as const,
@@ -19,7 +16,7 @@ const TESTS = [
     label: 'enquiry',
     data: {
       name: 'Claude Test Enquiry',
-      email: `${TEST_EMAIL_BASE}+enquiry@${TEST_DOMAIN}`,
+      email: 'claude-test+enquiry@example.com',
       phone: '0400000002',
       message: 'Automated test: vehicle enquiry',
       source: 'enquiry' as const,
@@ -37,7 +34,7 @@ const TESTS = [
     label: 'valuation',
     data: {
       name: 'Claude Test Valuation',
-      email: `${TEST_EMAIL_BASE}+valuation@${TEST_DOMAIN}`,
+      email: 'claude-test+valuation@example.com',
       phone: '0400000003',
       message: 'Automated test: valuation request for 2022 BMW M3, 25000 km',
       source: 'valuation' as const,
@@ -54,7 +51,7 @@ const TESTS = [
     label: 'sourcing',
     data: {
       name: 'Claude Test Sourcing',
-      email: `${TEST_EMAIL_BASE}+sourcing@${TEST_DOMAIN}`,
+      email: 'claude-test+sourcing@example.com',
       phone: '0400000004',
       message: 'Automated test: car sourcing request',
       source: 'sourcing' as const,
@@ -73,15 +70,36 @@ const TESTS = [
 ];
 
 export async function GET() {
-  const results: Record<string, unknown> = {};
+  const token = process.env.HUBSPOT_ACCESS_TOKEN;
+
   const envCheck = {
-    HUBSPOT_ACCESS_TOKEN: !!process.env.HUBSPOT_ACCESS_TOKEN,
+    HUBSPOT_ACCESS_TOKEN: !!token,
     NEXT_PUBLIC_HUBSPOT_PORTAL_ID: process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID ?? null,
     NEXT_PUBLIC_HUBSPOT_CONTACT_FORM_ID: process.env.NEXT_PUBLIC_HUBSPOT_CONTACT_FORM_ID ?? null,
     NEXT_PUBLIC_HUBSPOT_ENQUIRY_FORM_ID: process.env.NEXT_PUBLIC_HUBSPOT_ENQUIRY_FORM_ID ?? null,
     NEXT_PUBLIC_HUBSPOT_VALUATION_FORM_ID: process.env.NEXT_PUBLIC_HUBSPOT_VALUATION_FORM_ID ?? null,
   };
 
+  // Diagnostic: raw contact creation to see the actual HubSpot response
+  let rawContactDiag: unknown = null;
+  if (token) {
+    const res = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        properties: {
+          firstname: 'DiagTest',
+          lastname: 'Auto',
+          email: 'claude-test+diag@example.com',
+          phone: '0400000000',
+        },
+      }),
+    });
+    const body = await res.json().catch(() => null);
+    rawContactDiag = { status: res.status, body };
+  }
+
+  const results: Record<string, unknown> = {};
   for (const test of TESTS) {
     try {
       const result = await createHubSpotEnquiry(test.data);
@@ -91,5 +109,5 @@ export async function GET() {
     }
   }
 
-  return NextResponse.json({ envCheck, results });
+  return NextResponse.json({ envCheck, rawContactDiag, results });
 }
