@@ -10,9 +10,13 @@ function db() {
 }
 
 async function upsertSetting(key: string, value: string) {
-  await db()
+  const { error } = await db()
     .from('app_settings')
     .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+  if (error) {
+    console.error('[linkedin/callback] upsertSetting failed:', key, error);
+    throw error;
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -48,6 +52,7 @@ export async function GET(request: NextRequest) {
 
   if (!tokenRes.ok) {
     const msg = await tokenRes.text();
+    console.error('[linkedin/callback] token exchange failed:', tokenRes.status, msg);
     return NextResponse.redirect(
       `${baseUrl}/admin/social-pack?linkedin_error=${encodeURIComponent(`Token exchange failed: ${msg}`)}`
     );
@@ -59,7 +64,14 @@ export async function GET(request: NextRequest) {
     refresh_token?: string;
   };
 
-  await upsertSetting('linkedin_access_token', tokenData.access_token);
+  try {
+    await upsertSetting('linkedin_access_token', tokenData.access_token);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.redirect(
+      `${baseUrl}/admin/social-pack?linkedin_error=${encodeURIComponent(`DB write failed: ${msg}`)}`
+    );
+  }
 
   // Auto-discover the organization the user administers (pick the first)
   try {
