@@ -76,7 +76,8 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         properties: {
           dealname: `${vehicleLabel} — ${name ?? email ?? 'Enquiry'}`,
-          dealstage: 'appointmentscheduled',
+          pipeline: '1680745971',
+          dealstage: '2823590348',
           amount: vehicle?.price?.toString(),
           description: message,
         },
