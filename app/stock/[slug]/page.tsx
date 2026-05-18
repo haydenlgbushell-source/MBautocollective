@@ -8,7 +8,7 @@ import Badge from '@/components/ui/Badge';
 import PhotoGallery from '@/components/stock/PhotoGallery';
 import SimilarVehicles from '@/components/stock/SimilarVehicles';
 import VehicleDetailPanel from '@/components/stock/VehicleDetailPanel';
-import EnquiryForm from '@/components/forms/EnquiryForm';
+import DescriptionBlock from '@/components/stock/DescriptionBlock';
 import { getVehicleBySlug } from '@/lib/supabase/vehicles';
 import { formatPrice, formatKm } from '@/lib/utils';
 import { BUSINESS } from '@/lib/constants';
@@ -132,9 +132,15 @@ export default async function VehicleDetailPage({ params }: PageProps) {
             )}
 
             {vehicle.description && (
-              <p className="text-[14px] text-text-2 leading-[1.92] mb-10 max-w-[680px]">
-                {vehicle.description}
-              </p>
+              <div className="mb-10 max-w-[680px]">
+                <div className="flex items-center gap-5 mb-4">
+                  <span className="font-mono-custom text-[9px] tracking-[0.3em] uppercase text-gold whitespace-nowrap">
+                    Vehicle Description
+                  </span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+                <DescriptionBlock description={vehicle.description} />
+              </div>
             )}
 
             {/* Tabbed panel: Details / Features / Optional Extras */}
@@ -215,16 +221,6 @@ export default async function VehicleDetailPage({ params }: PageProps) {
             </div>
 
             <div className="h-px bg-border mb-7" />
-
-            {/* Email enquiry form */}
-            <div className="font-display text-[20px] font-[300] mb-[5px]">Send an Enquiry</div>
-            <p className="text-[12px] text-text-2 mb-5 leading-[1.7]">
-              Fill in your details and {BUSINESS.director} will be in touch promptly.
-            </p>
-
-            <EnquiryForm vehicle={vehicle} compact />
-
-            <div className="h-px bg-border my-5" />
 
             {/* Contact details */}
             <div className="flex flex-col gap-[10px]">

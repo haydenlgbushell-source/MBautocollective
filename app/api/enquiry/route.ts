@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
 
     const formId = FORM_IDS[source];
     const pageUri = request.headers.get('referer') ?? undefined;
+    const hutk = request.cookies.get('hubspotutk')?.value;
 
     // 1. Send to HubSpot (Forms API + CRM contact/deal creation)
     let hubspotResult = null;
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
         source,
         formId,
         pageUri,
+        hutk,
       });
     } catch (err) {
       console.error('HubSpot error:', err);

@@ -6,6 +6,7 @@ interface HubSpotFormField {
 interface HubSpotFormContext {
   pageUri?: string;
   pageName?: string;
+  hutk?: string;
 }
 
 export async function submitHubSpotForm(
