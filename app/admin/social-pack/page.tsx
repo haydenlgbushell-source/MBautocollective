@@ -5,18 +5,38 @@ import SocialPackClientPage from './client';
 
 export const revalidate = 0;
 
+async function getLinkedInConnected(supabase: Awaited<ReturnType<typeof createAdminClient>>): Promise<boolean> {
+  try {
+    const { data } = await supabase
+      .from('app_settings')
+      .select('key, value')
+      .in('key', ['linkedin_access_token', 'linkedin_organization_id']);
+
+    const settings = Object.fromEntries((data ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
+    const accessToken = settings['linkedin_access_token'] || process.env.LINKEDIN_ACCESS_TOKEN || '';
+    const organizationId = settings['linkedin_organization_id'] || process.env.LINKEDIN_ORGANIZATION_ID || '';
+    return !!(accessToken && organizationId);
+  } catch {
+    // Fallback to env vars only
+    return !!(process.env.LINKEDIN_ACCESS_TOKEN && process.env.LINKEDIN_ORGANIZATION_ID);
+  }
+}
+
 export default async function SocialPackPage() {
   let vehicles: Awaited<ReturnType<typeof getVehicles>> = [];
   let packs: SocialPack[] = [];
+  let linkedInConnected = false;
 
   try {
     const supabase = await createAdminClient();
-    const [vehicleData, { data: packData }] = await Promise.all([
+    const [vehicleData, { data: packData }, liConnected] = await Promise.all([
       getVehicles(),
       supabase.from('social_packs').select('*'),
+      getLinkedInConnected(supabase),
     ]);
     vehicles = vehicleData;
     packs = (packData as SocialPack[]) ?? [];
+    linkedInConnected = liConnected;
   } catch {
     // Supabase not configured
   }
@@ -25,5 +45,11 @@ export default async function SocialPackPage() {
     packs.map((p) => [p.vehicle_id, p])
   );
 
-  return <SocialPackClientPage vehicles={vehicles} packsMap={packsMap} />;
+  return (
+    <SocialPackClientPage
+      vehicles={vehicles}
+      packsMap={packsMap}
+      linkedInConnected={linkedInConnected}
+    />
+  );
 }
