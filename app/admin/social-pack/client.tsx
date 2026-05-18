@@ -13,10 +13,14 @@ export default function SocialPackClientPage({
   vehicles,
   packsMap,
   linkedInConnected,
+  linkedInError,
+  linkedInJustConnected,
 }: {
   vehicles: Vehicle[];
   packsMap: Record<string, SocialPack>;
   linkedInConnected: boolean;
+  linkedInError?: string | null;
+  linkedInJustConnected?: boolean;
 }) {
   const [selected, setSelected] = useState<Vehicle | null>(vehicles[0] ?? null);
   const [isApprovePending, startApproveTransition] = useTransition();
@@ -96,8 +100,23 @@ export default function SocialPackClientPage({
         </div>
       </div>
 
+      {/* LinkedIn OAuth error banner */}
+      {linkedInError && (
+        <div className="mb-6 border border-red-900/40 bg-red-950/20 px-5 py-4 flex items-start gap-3">
+          <span className="flex-shrink-0 text-red-400">⚠</span>
+          <span className="font-body text-[11px] text-red-400">LinkedIn connection failed: {linkedInError}</span>
+        </div>
+      )}
+
+      {/* LinkedIn just connected banner */}
+      {linkedInJustConnected && (
+        <div className="mb-6 border border-green-900/40 bg-green-950/20 px-5 py-4">
+          <span className="font-body text-[11px] text-green-400">LinkedIn connected successfully.</span>
+        </div>
+      )}
+
       {/* LinkedIn connection banner */}
-      {!linkedInConnected && (
+      {!linkedInConnected && !linkedInJustConnected && (
         <div className="mb-6 border border-[#b8963e]/30 bg-[#b8963e]/5 px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
           <span className="font-body text-[11px] text-[#b8963e]">
             LinkedIn not connected — publishing to LinkedIn will fail.
@@ -110,6 +129,7 @@ export default function SocialPackClientPage({
           </a>
         </div>
       )}
+
 
       {/* Action error */}
       {actionError && (

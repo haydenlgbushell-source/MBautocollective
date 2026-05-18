@@ -22,7 +22,15 @@ async function getLinkedInConnected(supabase: Awaited<ReturnType<typeof createAd
   }
 }
 
-export default async function SocialPackPage() {
+export default async function SocialPackPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string>>;
+}) {
+  const params = await searchParams;
+  const linkedInError = params['linkedin_error'] ?? null;
+  const linkedInJustConnected = params['linkedin_connected'] === '1';
+
   let vehicles: Awaited<ReturnType<typeof getVehicles>> = [];
   let packs: SocialPack[] = [];
   let linkedInConnected = false;
@@ -50,6 +58,8 @@ export default async function SocialPackPage() {
       vehicles={vehicles}
       packsMap={packsMap}
       linkedInConnected={linkedInConnected}
+      linkedInError={linkedInError}
+      linkedInJustConnected={linkedInJustConnected}
     />
   );
 }
