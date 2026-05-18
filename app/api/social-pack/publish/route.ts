@@ -116,18 +116,19 @@ export async function POST(request: NextRequest) {
     const { data: liSettings } = await supabase
       .from('app_settings')
       .select('key, value')
-      .in('key', ['linkedin_access_token', 'linkedin_organization_id']);
+      .in('key', ['linkedin_access_token', 'linkedin_organization_id', 'linkedin_member_id']);
     const liMap = Object.fromEntries((liSettings ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
 
     const accessToken = liMap['linkedin_access_token'] || process.env.LINKEDIN_ACCESS_TOKEN;
     const organizationId = liMap['linkedin_organization_id'] || process.env.LINKEDIN_ORGANIZATION_ID;
+    const memberId = liMap['linkedin_member_id'];
 
-    if (!accessToken || !organizationId) {
+    if (!accessToken || (!organizationId && !memberId)) {
       results.linkedin = { success: false, error: 'LinkedIn credentials not configured' };
     } else {
       try {
         const text = joinCaption(pack.linkedin_body, pack.linkedin_hashtags);
-        const result = await postToLinkedIn({ accessToken, organizationId, text, photoUrl: photos[0] });
+        const result = await postToLinkedIn({ accessToken, organizationId, memberId, text, photoUrl: photos[0] });
         results.linkedin = { success: true, ...result };
       } catch (e) {
         results.linkedin = { success: false, error: e instanceof Error ? e.message : String(e) };

@@ -73,25 +73,19 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Auto-discover the organization the user administers (pick the first)
+  // Fetch the member's person URN (needed to post as a member with w_member_social)
   try {
-    const aclRes = await fetch(
-      'https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee&role=ADMINISTRATOR&projection=(elements*(organizationalTarget~(id,localizedName)))',
-      { headers: { Authorization: `Bearer ${tokenData.access_token}` } }
-    );
-    if (aclRes.ok) {
-      const aclData = await aclRes.json() as {
-        elements?: { organizationalTarget?: { id?: string } }[];
-      };
-      const orgUrn = aclData.elements?.[0]?.organizationalTarget?.id;
-      if (orgUrn) {
-        // URN format: urn:li:organization:12345678 — extract the numeric ID
-        const orgId = orgUrn.split(':').pop() ?? orgUrn;
-        await upsertSetting('linkedin_organization_id', orgId);
+    const meRes = await fetch('https://api.linkedin.com/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    });
+    if (meRes.ok) {
+      const me = await meRes.json() as { sub?: string };
+      if (me.sub) {
+        await upsertSetting('linkedin_member_id', me.sub);
       }
     }
   } catch {
-    // Non-fatal — admin can set LINKEDIN_ORGANIZATION_ID env var manually
+    // Non-fatal
   }
 
   return NextResponse.redirect(`${baseUrl}/admin/social-pack?linkedin_connected=1`);

@@ -10,12 +10,13 @@ async function getLinkedInConnected(supabase: Awaited<ReturnType<typeof createAd
     const { data } = await supabase
       .from('app_settings')
       .select('key, value')
-      .in('key', ['linkedin_access_token', 'linkedin_organization_id']);
+      .in('key', ['linkedin_access_token', 'linkedin_organization_id', 'linkedin_member_id']);
 
     const settings = Object.fromEntries((data ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
     const accessToken = settings['linkedin_access_token'] || process.env.LINKEDIN_ACCESS_TOKEN || '';
     const organizationId = settings['linkedin_organization_id'] || process.env.LINKEDIN_ORGANIZATION_ID || '';
-    return !!(accessToken && organizationId);
+    const memberId = settings['linkedin_member_id'] || '';
+    return !!(accessToken && (organizationId || memberId));
   } catch {
     // Fallback to env vars only
     return !!(process.env.LINKEDIN_ACCESS_TOKEN && process.env.LINKEDIN_ORGANIZATION_ID);

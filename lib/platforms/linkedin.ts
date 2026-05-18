@@ -74,12 +74,17 @@ async function registerAndUploadImage(
 
 export async function postToLinkedIn(opts: {
   accessToken: string;
-  organizationId: string;
+  organizationId?: string;
+  memberId?: string;
   text: string;
   photoUrl?: string;
 }): Promise<LinkedInPostResult> {
-  const { accessToken, organizationId, text, photoUrl } = opts;
-  const organizationUrn = `urn:li:organization:${organizationId}`;
+  const { accessToken, organizationId, memberId, text, photoUrl } = opts;
+  if (!organizationId && !memberId) throw new Error('LinkedIn: organizationId or memberId required');
+  const authorUrn = organizationId
+    ? `urn:li:organization:${organizationId}`
+    : `urn:li:person:${memberId}`;
+  const organizationUrn = authorUrn;
 
   let mediaSection: object | undefined;
 
@@ -96,7 +101,7 @@ export async function postToLinkedIn(opts: {
   }
 
   const ugcPost = {
-    author: organizationUrn,
+    author: authorUrn,
     lifecycleState: 'PUBLISHED',
     specificContent: {
       'com.linkedin.ugc.ShareContent': {

@@ -13,14 +13,16 @@ export async function GET() {
   const { data } = await db()
     .from('app_settings')
     .select('key, value')
-    .in('key', ['linkedin_access_token', 'linkedin_organization_id']);
+    .in('key', ['linkedin_access_token', 'linkedin_member_id', 'linkedin_organization_id']);
 
   const settings = Object.fromEntries((data ?? []).map((r) => [r.key, r.value]));
 
   const accessToken =
     settings['linkedin_access_token'] || process.env.LINKEDIN_ACCESS_TOKEN || '';
+  const memberId = settings['linkedin_member_id'] || '';
   const organizationId =
     settings['linkedin_organization_id'] || process.env.LINKEDIN_ORGANIZATION_ID || '';
 
-  return NextResponse.json({ connected: !!(accessToken && organizationId) });
+  // Connected if we have a token + either a member ID (personal) or org ID (company page)
+  return NextResponse.json({ connected: !!(accessToken && (memberId || organizationId)) });
 }
