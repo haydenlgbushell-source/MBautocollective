@@ -4,6 +4,7 @@
 // Required env vars: LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, ADMIN_API_SECRET
 
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { bootstrapLinkedInTokens } from '@/lib/platforms/linkedin-auth';
 
 const SCOPES = ['w_organization_social', 'r_organization_social'].join(' ');
@@ -60,8 +61,7 @@ export async function GET(request: NextRequest) {
         await bootstrapLinkedInTokens(data.refresh_token);
       } else {
         // Store the access token directly with its expiry — no refresh available
-        const { default: supabase } = await import('@supabase/supabase-js');
-        const db = supabase.createClient(
+        const db = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.SUPABASE_SERVICE_ROLE_KEY!,
           { auth: { persistSession: false } }
