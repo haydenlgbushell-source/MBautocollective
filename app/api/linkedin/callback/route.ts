@@ -98,8 +98,12 @@ export async function GET(request: NextRequest) {
     return new NextResponse(`LinkedIn authorization error: ${searchParams.get('error_description') ?? error}`, { status: 400 });
   }
 
-  // Step 1 — initiate the OAuth flow (requires admin auth)
-  if (!expectedSecret || authHeader !== `Bearer ${expectedSecret}`) {
+  // Step 1 — initiate the OAuth flow (requires admin auth via header or ?secret= query param)
+  const querySecret = searchParams.get('secret');
+  const isAuthorized =
+    expectedSecret && (authHeader === `Bearer ${expectedSecret}` || querySecret === expectedSecret);
+
+  if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
