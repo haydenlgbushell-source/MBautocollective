@@ -12,9 +12,11 @@ import type { PackEdits } from './actions';
 export default function SocialPackClientPage({
   vehicles,
   packsMap,
+  linkedInConnected,
 }: {
   vehicles: Vehicle[];
   packsMap: Record<string, SocialPack>;
+  linkedInConnected: boolean;
 }) {
   const [selected, setSelected] = useState<Vehicle | null>(vehicles[0] ?? null);
   const [isApprovePending, startApproveTransition] = useTransition();
@@ -93,6 +95,21 @@ export default function SocialPackClientPage({
           Platform-ready content for every vehicle
         </div>
       </div>
+
+      {/* LinkedIn connection banner */}
+      {!linkedInConnected && (
+        <div className="mb-6 border border-[#b8963e]/30 bg-[#b8963e]/5 px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
+          <span className="font-body text-[11px] text-[#b8963e]">
+            LinkedIn not connected — publishing to LinkedIn will fail.
+          </span>
+          <a
+            href="/api/linkedin/auth"
+            className="border border-[#b8963e] text-[#b8963e] font-body text-[10px] tracking-[0.18em] uppercase px-4 py-2 hover:bg-[#b8963e]/10 transition-colors flex-shrink-0"
+          >
+            Connect LinkedIn
+          </a>
+        </div>
+      )}
 
       {/* Action error */}
       {actionError && (

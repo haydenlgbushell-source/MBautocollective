@@ -113,8 +113,14 @@ export async function POST(request: NextRequest) {
 
   // ── LinkedIn ──────────────────────────────────────────────────────────────
   if (platforms.includes('linkedin')) {
-    const accessToken = process.env.LINKEDIN_ACCESS_TOKEN;
-    const organizationId = process.env.LINKEDIN_ORGANIZATION_ID;
+    const { data: liSettings } = await supabase
+      .from('app_settings')
+      .select('key, value')
+      .in('key', ['linkedin_access_token', 'linkedin_organization_id']);
+    const liMap = Object.fromEntries((liSettings ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
+
+    const accessToken = liMap['linkedin_access_token'] || process.env.LINKEDIN_ACCESS_TOKEN;
+    const organizationId = liMap['linkedin_organization_id'] || process.env.LINKEDIN_ORGANIZATION_ID;
 
     if (!accessToken || !organizationId) {
       results.linkedin = { success: false, error: 'LinkedIn credentials not configured' };
