@@ -98,11 +98,15 @@ export async function createHubSpotEnquiry(data: HubSpotEnquiry) {
     const body = await contactRes.json().catch(() => null);
     if (contactRes.status === 409) {
       contactId = body?.message?.match(/existing ID: (\d+)/i)?.[1];
+    } else {
+      const errMsg = body?.message ?? `HTTP ${contactRes.status}`;
+      console.error('HubSpot contact creation failed:', errMsg);
+      return { success: false, error: `Failed to create HubSpot contact: ${errMsg}` };
     }
   }
 
   if (!contactId) {
-    return { success: false, error: 'Failed to create HubSpot contact' };
+    return { success: false, error: 'Failed to create HubSpot contact: could not extract ID from 409 response' };
   }
 
   // 3. Create deal in Car Sales pipeline with correct stage per source
