@@ -16,11 +16,11 @@ async function upsertSetting(key: string, value: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
+  const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const error = searchParams.get('error');
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? process.env.NEXTAUTH_URL ?? '';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? origin;
   const redirectUri = `${baseUrl}/api/linkedin/callback`;
 
   if (error || !code) {

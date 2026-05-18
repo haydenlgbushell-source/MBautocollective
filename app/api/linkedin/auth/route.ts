@@ -1,12 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export function GET() {
+export function GET(request: NextRequest) {
   const clientId = process.env.LINKEDIN_CLIENT_ID;
   if (!clientId) {
     return NextResponse.json({ error: 'LINKEDIN_CLIENT_ID not configured' }, { status: 500 });
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? process.env.NEXTAUTH_URL ?? '';
+  // Derive base URL from the request so it works without NEXT_PUBLIC_BASE_URL
+  const { origin } = new URL(request.url);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? origin;
   const redirectUri = `${baseUrl}/api/linkedin/callback`;
 
   const params = new URLSearchParams({
