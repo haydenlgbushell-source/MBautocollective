@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useTransition, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { Vehicle } from '@/types/vehicle';
 import type { SocialPack, IGVariant, PublishPlatform, PublishResults } from '@/types/social';
 import { formatPrice, formatKm } from '@/lib/utils';
@@ -12,15 +12,32 @@ import type { PackEdits } from './actions';
 export default function SocialPackClientPage({
   vehicles,
   packsMap,
+  linkedInConnected,
+  linkedInExpiresAt,
 }: {
   vehicles: Vehicle[];
   packsMap: Record<string, SocialPack>;
+  linkedInConnected: boolean;
+  linkedInExpiresAt: string | null;
 }) {
   const [selected, setSelected] = useState<Vehicle | null>(vehicles[0] ?? null);
   const [isApprovePending, startApproveTransition] = useTransition();
   const [isGenerating, setIsGenerating] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [linkedInFlashSuccess, setLinkedInFlashSuccess] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('linkedin_connected') === '1') {
+      setLinkedInFlashSuccess(true);
+      router.replace('/admin/social-pack');
+    }
+    if (searchParams.get('linkedin_error')) {
+      setActionError(`LinkedIn OAuth error: ${searchParams.get('linkedin_error')}`);
+      router.replace('/admin/social-pack');
+    }
+  }, [searchParams, router]);
 
   const pack = selected ? (packsMap[selected.id] ?? null) : null;
   const isPending = isApprovePending || isGenerating;
@@ -93,6 +110,48 @@ export default function SocialPackClientPage({
           Platform-ready content for every vehicle
         </div>
       </div>
+
+      {/* LinkedIn connection status */}
+      {linkedInFlashSuccess && (
+        <div className="mb-6 border border-green-800/40 bg-green-950/20 px-4 py-3 text-[12px] text-green-400 font-body flex items-center gap-3">
+          <span>LinkedIn connected successfully. Token stored.</span>
+          <button
+            onClick={() => setLinkedInFlashSuccess(false)}
+            className="ml-auto text-green-600 hover:text-green-400"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      {!linkedInConnected && !linkedInFlashSuccess && (
+        <div className="mb-6 border border-yellow-800/40 bg-yellow-950/20 px-4 py-3 text-[12px] text-yellow-400 font-body flex items-center gap-3 flex-wrap">
+          <span>LinkedIn not connected — publishing to LinkedIn will fail.</span>
+          <a
+            href="/api/linkedin/connect"
+            className="ml-auto border border-yellow-700 px-3 py-1 text-yellow-300 hover:bg-yellow-900/30 transition-colors whitespace-nowrap"
+          >
+            Connect LinkedIn
+          </a>
+        </div>
+      )}
+      {linkedInConnected && !linkedInFlashSuccess && linkedInExpiresAt && (
+        <div className="mb-6 border border-border bg-bg-2 px-4 py-3 text-[11px] text-text-3 font-mono-custom flex items-center gap-3 flex-wrap">
+          <span>
+            LinkedIn connected · token expires{' '}
+            {new Date(linkedInExpiresAt).toLocaleDateString('en-AU', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })}
+          </span>
+          <a
+            href="/api/linkedin/connect"
+            className="ml-auto text-text-3 hover:text-text underline transition-colors"
+          >
+            Re-connect
+          </a>
+        </div>
+      )}
 
       {/* Action error */}
       {actionError && (
