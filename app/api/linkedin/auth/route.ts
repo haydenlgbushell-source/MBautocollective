@@ -15,7 +15,7 @@ export function GET(request: NextRequest) {
     response_type: 'code',
     client_id: clientId,
     redirect_uri: redirectUri,
-    scope: 'w_organization_social r_organization_social',
+    scope: 'openid profile w_member_social',
     state: 'social-pack',
   });
 
