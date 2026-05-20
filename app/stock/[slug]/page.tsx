@@ -87,11 +87,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           <div className="absolute top-5 left-5 z-10 pointer-events-none">
             <Badge status={vehicle.status} />
           </div>
-          {vehicle.status === 'available' && (
-            <div className="absolute top-5 right-5 z-10 font-mono-custom text-[8px] tracking-[0.25em] uppercase px-[14px] py-[6px] border border-gold-lo text-gold bg-[rgba(0,0,0,0.6)] pointer-events-none">
-              Available Now
-            </div>
-          )}
+
         </div>
 
         {/* Headline spec badges */}
