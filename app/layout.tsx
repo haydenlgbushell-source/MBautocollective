@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Montserrat, DM_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import CustomCursor from '@/components/ui/CustomCursor';
+import LoadingIntro from '@/components/LoadingIntro';
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -65,6 +66,7 @@ export default function RootLayout({
       className={`${cormorant.variable} ${montserrat.variable} ${dmMono.variable}`}
     >
       <body className="bg-bg text-text font-body antialiased">
+        <LoadingIntro />
         <CustomCursor />
         {children}
         {process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID && (
